@@ -16,8 +16,8 @@ void adminDashboard(char username[]);
 void clear();
 int askForNumber(int min,int max);
 long int accountNumber();
-int isFolder(char dirName[]);
-void registeruser();
+int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
+void registerUser();
 
 struct customers
 {
@@ -30,7 +30,8 @@ struct customers
 
 int main(){
 	clear();
-	login();
+	// login();
+	registerUser();
 	return 0;
 }
 
@@ -142,7 +143,10 @@ int isFolder(char dirName[]){
     	closedir(dir);
     	return 1;
     }
-    else if (ENOENT == errno){    	
+    else if (ENOENT == errno){
+    	char cmd[20];
+    	sprintf(cmd,"mkdir %s",dirName);
+    	system(cmd);	
     	return 0;
     }
 
@@ -157,9 +161,11 @@ void clear(){
 	#endif
 }
 
-void registeruser()
+void registerUser()
 {
     FILE *fp;
+    // creates details folder if not exists
+    isFolder("details");
     fp=fopen("details/customerdetails.txt","a");
     printf("first name : ");
     scanf("%s",customer.firstname);
@@ -184,6 +190,7 @@ void registeruser()
 
  	// adding to the balance file
  	FILE *balance;
+ 	isFolder("balance");
  	balance = fopen("balance/allbalances.txt","a");
  	fprintf(balance, "%ld\t%f\n",ac,0.0);
  	fclose(balance);
