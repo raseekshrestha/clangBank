@@ -17,6 +17,15 @@ void clear();
 int askForNumber(int min,int max);
 long int accountNumber();
 int isFolder(char dirName[]);
+void registeruser();
+
+struct customers
+{
+    char firstname[20],lastname[20];
+    char gender[10];
+    char DOB[15];
+    int age;
+}customer;
 
 
 int main(){
@@ -97,12 +106,12 @@ void userDashboard(char username[]){
 	
 	printf("welcome to user dashboard, %s\n",username );
 	printf("currently incomplete,will be completed soon\n");
+
 }
 void adminDashboard(char username[]){
 	
 	printf("welcome to admin dashboard, %s\n",username );
-	printf("currently incomplete,will be completed soon\n");
-	
+	printf("currently incomplete,will be completed soon\n");	
 }
 
 
@@ -147,3 +156,38 @@ void clear(){
 	system("clear");
 	#endif
 }
+
+void registeruser()
+{
+    FILE *fp;
+    fp=fopen("details/customerdetails.txt","a");
+    printf("first name : ");
+    scanf("%s",customer.firstname);
+    printf("last name : ");
+    scanf("%s",customer.lastname);
+    printf("gender : ");
+    scanf("%s",customer.gender);
+    printf("age : ");
+    scanf("%d",&customer.age);
+    printf("date of birth : ");
+    scanf("%s",customer.DOB);
+    long int ac = accountNumber();    
+    fprintf(fp,"%ld %s %s %s %d %s\n",ac,customer.firstname,customer.lastname,customer.gender,customer.age,customer.DOB);
+ 	fclose(fp);
+ 	// creating a separate file for indiviudal user
+ 	// FILE *fp1;
+ 	// char filename[50];
+ 	// sprintf(filename,"users/%ld.txt",ac);
+ 	// fp1 = fopen(filename,"w");
+ 	// fprintf(fp1, "Name: %s %s\nAccount Number: %ld\nGender: %s\nAge: %d\nDOB: %s",customer.firstname,customer.lastname,ac,customer.gender,customer.age );
+ 	// fclose(fp1);
+
+ 	// adding to the balance file
+ 	FILE *balance;
+ 	balance = fopen("balance/allbalances.txt","a");
+ 	fprintf(balance, "%ld\t%f\n",ac,0.0);
+ 	fclose(balance);
+ 	printf("User is registered Successfully\n");
+
+ 
+ }
