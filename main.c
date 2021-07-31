@@ -9,6 +9,7 @@
 #endif
 
 
+
 void login();
 void autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
 void userDashboard(char username[]);
@@ -23,6 +24,8 @@ int checkOs();
 void colorize(char msg[],char colorName[]);
 char *color(char colorName[]);
 void cleanStdin();
+int generateCharacter(int min,int max);
+char *generateRandomPassword();
 
 
 
@@ -30,6 +33,7 @@ void cleanStdin();
 struct customers
 {
     char firstname[20],lastname[20];
+    char number[15];
     char gender[10];
     char DOB[15];
     int age;
@@ -37,13 +41,22 @@ struct customers
 
 
 int main(){
-	clear();
-	// cleanStdin();
-	login();
+	srand(time(0));
+	// clear();
+	colorize("red\n","red");
+	colorize("blue\n","blue");
+	colorize("green\n","green");
+	colorize("magenta\n","magenta");
+	colorize("yellow\n","yellow");
+	colorize("cyan\n","cyan");
+	colorize("white\n","white");
+	
+	// printf("%\n");
+
+	// login();
+	askForNumber(1,5);
 	// registerUser();
-	// checkBalance(1627653207);
-	// askForNumber(1,5);
-	// cleanStdin();
+
 	return 0;
 }
 
@@ -52,7 +65,7 @@ int main(){
 void login(){
 	char role,username[50],password[50];
 	printf("Login to Continue\n");
-	colorize("If you are not register contact administrator\n","yellow");
+	colorize("If you are not registered contact administrator\n","yellow");
 	printf("1. Admin Login\n2. User Login\n");
 	int userChoice = askForNumber(1,2);
 	clear();
@@ -88,7 +101,7 @@ void autheticate(char username[],char password[],char role){
 	// take username,password and role, validate credentials and redirect to corresponding dashboard//error
 	char filename[20];
 	int usrFound = 0;
-	char user[50],pass[50];
+	char user[50],pass[50],firstname[30];
 	if (role == 'a'){
 		strcpy(filename,"login/admin.txt");
 	}
@@ -98,14 +111,15 @@ void autheticate(char username[],char password[],char role){
 	FILE *fp;
 	fp = fopen(filename,"r");
 	while (!feof(fp)){
-		fscanf(fp,"%s %s",user,pass);
+		fscanf(fp,"%s %s %s",user,pass,firstname);
 		if (strcmp(username,user)==0 && strcmp(password,pass)==0){
 			clear();
 			if (role=='a'){
 				adminDashboard(username);
 			}
 			else{
-				userDashboard(username);
+				//get username annd send to userDashboaard
+				userDashboard(firstname);
 			}
 			usrFound = 1;
 		}
@@ -117,7 +131,9 @@ void autheticate(char username[],char password[],char role){
 
 void userDashboard(char username[]){
 	
-	printf("welcome to user dashboard, %s\n",username );
+	printf("welcome to user dashboard, ");
+	strcpy(username,strcat(username,"\n"));
+	colorize(username,"cyan");
 	printf("currently incomplete,will be completed soon\n");
 
 }
@@ -131,6 +147,7 @@ void adminDashboard(char username[]){
 
 int askForNumber(int min,int max){
 	int n;
+	char errMsg[100];
 	while (1){
 		printf("Choose (%d ... %d) : ",min,max);
 		scanf(" %d",&n);
@@ -138,7 +155,8 @@ int askForNumber(int min,int max){
 			return n;
 		}
 		else{
-			printf("Choose a number between %d and %d\n", min,max);			
+			sprintf(errMsg,"Invalid Input: Choose a number between %d and %d\n", min,max);	
+			colorize(errMsg,"red");		
 			cleanStdin();
 		}
 
@@ -187,8 +205,7 @@ void clear(){
 	#endif
 }
 
-void registerUser()
-{
+void registerUser(){
     FILE *fp;
     // creates details folder if not exists
     isFolder("details");
@@ -197,6 +214,8 @@ void registerUser()
     scanf("%s",customer.firstname);
     printf("last name : ");
     scanf("%s",customer.lastname);
+    printf("Mobile Number : ");
+    scanf("%s",customer.number );
     printf("gender : ");
     scanf("%s",customer.gender);
     printf("age : ");
@@ -204,7 +223,7 @@ void registerUser()
     printf("date of birth : ");
     scanf("%s",customer.DOB);
     long int ac = accountNumber();    
-    fprintf(fp,"%ld %s %s %s %d %s\n",ac,customer.firstname,customer.lastname,customer.gender,customer.age,customer.DOB);
+    fprintf(fp,"%ld %s %s %s %s %d %s\n",ac,customer.firstname,customer.lastname,customer.number,customer.gender,customer.age,customer.DOB);
  	fclose(fp);
  	// creating a separate file for indiviudal user
  	// FILE *fp1;
@@ -218,9 +237,18 @@ void registerUser()
  	FILE *balance;
  	isFolder("balance");
  	balance = fopen("balance/allbalances.txt","a");
- 	fprintf(balance, "%ld\t%f\n",ac,0.0);
+ 	fprintf(balance, "%ld %s %f\n",ac,customer.number,0.0);
  	fclose(balance);
- 	printf("User is registered Successfully\n");
+
+	// generating temporary password and saving login/users.txt
+	// format -> number password firstname
+	char tempPass[5];
+	strcpy(tempPass,generateRandomPassword());
+	FILE *userFile;
+	userFile = fopen("login/users.txt","a");
+	fprintf(userFile, "%s %s %s\n",customer.number,tempPass,customer.firstname );
+	fclose(userFile);
+ 	colorize("User is registered Successfully\n","green");
 
  
  }
@@ -272,6 +300,12 @@ float checkBalance(long int ac){
 	else if (strcmp(colorName,"magenta")==0){
 		return "\033[0;35m";
 	}
+	else if (strcmp(colorName,"cyan")==0){
+		return "\033[0;36m";
+	}
+	else if (strcmp(colorName,"white")==0){
+		return "\033[0;37m";
+	}
 	else if (strcmp(colorName,"reset")==0){
 		return "\033[0;m";
 	}
@@ -280,3 +314,33 @@ float checkBalance(long int ac){
 void colorize(char msg[],char colorName[]){
 	printf("%s%s%s",color(colorName),msg,color("reset"));
 }
+
+
+int generateCharacter(int min,int max){	
+	return (rand() % (max-min+1))+min;
+	
+}
+	
+char *generateRandomPassword(){
+	static char pass[5];
+	int charType; //0->lowercase 1-->uppercase 2->number
+	for (int i=0;i<5;i++){
+		charType = rand()%3;
+		if (charType==0){
+			pass[i] = generateCharacter(97,122);
+		}
+		else if (charType == 1){
+			pass[i] = generateCharacter(65,90);
+		}
+		else{
+			pass[i] = generateCharacter(49,57);
+			// 0 is exclude as user might get confused with letter O
+
+		}
+	}
+	return pass;
+}
+
+
+
+
