@@ -10,14 +10,24 @@
 
 
 void login();
-void autheticate(char username[],char password[],char role);
+void autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
 void userDashboard(char username[]);
 void adminDashboard(char username[]);
 void clear();
-int askForNumber(int min,int max);
+int askForNumber(int min,int max);//allows to choose number betn min and max
 long int accountNumber();
 int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
+float checkBalance(long int ac);
+
+void cleanStdin()
+{
+    int c;
+    do {
+        c = getchar();
+    } while (c != '\n' && c != EOF);
+}
+
 
 struct customers
 {
@@ -31,7 +41,10 @@ struct customers
 int main(){
 	clear();
 	// login();
-	registerUser();
+	// registerUser();
+	checkBalance(1627653207);
+	askForNumber(1,5);
+	cleanStdin();
 	return 0;
 }
 
@@ -127,6 +140,7 @@ int askForNumber(int min,int max){
 		}
 		else{
 			printf("Choose a number between %d and %d\n", min,max);
+			cleanStdin();
 			fflush(stdin);
 		}
 	}
@@ -197,4 +211,26 @@ void registerUser()
  	printf("User is registered Successfully\n");
 
  
+ }
+
+float checkBalance(long int ac){
+ 	FILE *fp;
+ 	fp = fopen("balance/allbalances.txt","r");
+ 	char line[30];
+ 	long int acFromFile;
+ 	float userBalance;
+ 	while (!feof(fp)){
+ 		// fscanf(fp,"%ld %f",&acFromFile,&userBalance);
+ 		if( fgets (line, 60, fp)!=NULL ) {
+	      /* writing content to stdout */
+	      sscanf(line,"%ld %f",&acFromFile,&userBalance);
+	      if (ac==acFromFile){
+	      	printf("%ld\t%f\n",acFromFile,userBalance );
+	      }
+
+	   }
+
+ 		// printf("%ld\t%f\n",acFromFile,userBalance );
+
+ 	}
  }
