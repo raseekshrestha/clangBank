@@ -19,14 +19,9 @@ long int accountNumber();
 int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
 float checkBalance(long int ac);
+int checkOs();
 
-void cleanStdin()
-{
-    int c;
-    do {
-        c = getchar();
-    } while (c != '\n' && c != EOF);
-}
+void cleanStdin();
 
 
 struct customers
@@ -40,11 +35,12 @@ struct customers
 
 int main(){
 	clear();
-	// login();
+	// cleanStdin();
+	registerUser();
 	// registerUser();
-	checkBalance(1627653207);
+	// checkBalance(1627653207);
 	askForNumber(1,5);
-	cleanStdin();
+	// cleanStdin();
 	return 0;
 }
 
@@ -139,11 +135,24 @@ int askForNumber(int min,int max){
 			return n;
 		}
 		else{
-			printf("Choose a number between %d and %d\n", min,max);
+			printf("Choose a number between %d and %d\n", min,max);			
 			cleanStdin();
-			fflush(stdin);
 		}
+
 	}
+}
+
+void cleanStdin(){
+	if (checkOs()){
+	    int c;
+	    do {
+	        c = getchar();
+	    } while (c != '\n' && c != EOF);
+	}
+	else{
+    	fflush(stdin);
+	}
+    
 }
 
 
@@ -233,4 +242,13 @@ float checkBalance(long int ac){
  		// printf("%ld\t%f\n",acFromFile,userBalance );
 
  	}
+ }
+
+ int checkOs(){
+ 	#ifdef __WIN32
+ 	return 0;
+ 	#endif
+ 	#ifdef linux
+ 	return 1;
+ 	#endif
  }
