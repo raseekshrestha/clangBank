@@ -20,8 +20,11 @@ int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
 float checkBalance(long int ac);
 int checkOs();
-
+void colorize(char msg[],char colorName[]);
+char *color(char colorName[]);
 void cleanStdin();
+
+
 
 
 struct customers
@@ -36,10 +39,10 @@ struct customers
 int main(){
 	clear();
 	// cleanStdin();
-	registerUser();
+	login();
 	// registerUser();
 	// checkBalance(1627653207);
-	askForNumber(1,5);
+	// askForNumber(1,5);
 	// cleanStdin();
 	return 0;
 }
@@ -49,7 +52,7 @@ int main(){
 void login(){
 	char role,username[50],password[50];
 	printf("Login to Continue\n");
-	printf("If you are not register contact administrator\n");
+	colorize("If you are not register contact administrator\n","yellow");
 	printf("1. Admin Login\n2. User Login\n");
 	int userChoice = askForNumber(1,2);
 	clear();
@@ -108,7 +111,7 @@ void autheticate(char username[],char password[],char role){
 		}
 	}
 	if (!usrFound){
-		printf("Incorrect username or password.\n");
+		colorize("\nIncorrect username or password.\n","red");
 	}
 }
 
@@ -252,3 +255,28 @@ float checkBalance(long int ac){
  	return 1;
  	#endif
  }
+
+ char *color(char colorName[]){
+	if (strcmp(colorName,"red")==0){
+		return "\033[0;31m";
+	}
+	else if (strcmp(colorName,"green")==0){
+		return "\033[0;32m";
+	}
+	else if (strcmp(colorName,"yellow")==0){
+		return "\033[0;33m";
+	}
+	else if (strcmp(colorName,"blue")==0){
+		return "\033[0;34m";
+	}
+	else if (strcmp(colorName,"magenta")==0){
+		return "\033[0;35m";
+	}
+	else if (strcmp(colorName,"reset")==0){
+		return "\033[0;m";
+	}
+}
+
+void colorize(char msg[],char colorName[]){
+	printf("%s%s%s",color(colorName),msg,color("reset"));
+}
