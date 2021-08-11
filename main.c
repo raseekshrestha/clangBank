@@ -28,6 +28,7 @@ int generateCharacter(int min,int max);
 char *generateRandomPassword();
 void listUsers();
 void firstTimeLogin();
+int countLinesInFile(char filename[]);
 
 // global variables
 char currentUser[20],currentUserMobile[15],currentUserAc[15];
@@ -49,23 +50,16 @@ struct customers
 
 int main(){
 	clear();
-	// char pass[5];
-	// strcpy(pass,generateRandomPassword());
-	// printf("%s",pass);
-	// colorize("red\n","red");
-	// colorize("blue\n","blue");
-	// colorize("green\n","green");
-	// colorize("magenta\n","magenta");
-	// colorize("yellow\n","yellow");
-	// colorize("cyan\n","cyan");
-	// colorize("white\n","white");
-	// colorize("okaay","green");
-	// float userbal = checkBalance(1628653776);
-	// printf("%f",userbal);
+	
+	int lines= countLinesInFile("login/users.txt");
+	printf("no of lines : %d",lines);
+	login();
 	// registerUser();
-	// clear();
-	listUsers();
-	firstTimeLogin();
+	// FILE *fp = fopen("login/hh.txt","r");
+
+	// rename("login/hh.css","login/temp.txt");
+	// fclose(fp);
+	// remove("login/temp.txt");
 	// printf("%s",colorizeReturn("okay","blueUnderline"));
 
 
@@ -130,13 +124,16 @@ void autheticate(char username[],char password[],char role){
 	while (!feof(fp)){
 		fscanf(fp,"%s %s %s %d",user,pass,fname,&firstLogin);
 		if (strcmp(username,user)==0 && strcmp(password,pass)==0){
+			
 			clear();
 			if (role=='a'){
 				strcpy(currentUser,username); //setting up value for global variable "currentUser"
 				adminDashboard();
 			}
 			else{
-				strcpy(currentUser,fname);
+				strcpy(currentUser,fname); // third entry is fname in users.txt
+				strcpy(currentUserMobile,user); // first entry is ac num " "
+				// strcpy(currentUserMobile,)
 				userDashboard();
 			}
 			usrFound = 1;
@@ -145,6 +142,9 @@ void autheticate(char username[],char password[],char role){
 	if (!usrFound){
 		colorize("\nIncorrect username or password.\n","red");
 	}
+	fclose(fp);
+	
+
 }
 
 void userDashboard(){
@@ -156,6 +156,9 @@ void userDashboard(){
 		printf("Looks like you are a new user\n");
 		printf("Secure you account by changing password and transaction pin\n");
 		firstTimeLogin();
+	}
+	else{
+		printf("this is not your first time so continue\n");
 	}
 	printf("currently incomplete,will be completed soon\n");
 
@@ -221,7 +224,7 @@ int isFolder(char dirName[]){
 
 void clear(){
 	#ifdef __WIN32
-	system("cls");
+	system("clear");
 	#endif
 	#ifdef linux
 	system("clear");
@@ -296,12 +299,14 @@ float checkBalance(long int ac){
 	      sscanf(line,"%ld %s %f",&acFromFile,number,&userBalance);
 	      if (ac==acFromFile){
 	      	printf("%ld\t%s\t%f\n",acFromFile,number,userBalance );
+	      	fclose(fp);
 			return userBalance;
 	      }
 
 	   }
 
  	}
+ 	fclose(fp);
  }
 
  int checkOs(){
@@ -384,15 +389,10 @@ void listUsers(){
 	int age;
 
 	char line[200];
-	int counter=0;
+	int counter = countLinesInFile("details.customerdetails.txt");
 	fp = fopen("details/customerdetails.txt","r");
 	printf("%s",colorizeReturn("Acc no.\t\tName\t\t\tNumber\t\tGender\tAge\tDOB\n","blueUnderline"));
-	while(!feof(fp)){
-		if (fgetc(fp)=='\n'){
-			counter ++;
-		}
-	}
-	rewind(fp); // take pointer to beginning of the file
+	// rewind(fp); // take pointer to beginning of the file
 	// printf("%d",counter);
 	for (int i=1;i<=counter;i++){
 		fscanf(fp,"%s %s %s %s %s %d %s",ac,firstname,lastname,number,gender,&age,DOB);
@@ -403,23 +403,60 @@ void listUsers(){
 		// printf("%s",line);
 		
 	}
+	fclose(fp);
 }
 
 void firstTimeLogin(){
 	char newPass[30],confirmPass[30];
-	int pin;
-	printf("Enter New Password : ");
-	gets(newPass);
-	printf("Enter Confirm Pass : ");
-	gets(confirmPass);
-	if (strcmp(newPass,confirmPass)==0){
-		printf("okey we are in");
+	int pin,linesInUsersTxt;
+	while (1){
+		printf("Enter New Password : ");
+		gets(newPass);
+		printf("Enter Confirm Pass : ");
+		gets(confirmPass);
+		if (strcmp(newPass,confirmPass)==0){
+			break;
+		}
+		else{
+			colorize("New password and Confirm Password doesn't match\nTry again\n","red");
+		}
 	}
-	else{
-		printf("oh snap wrong again");
+	printf("enter 4 digit pin code. ");
+	char mobile[20],pass[20],fname[20];
+	int fLogin,eachUserPin;
+	pin = askForNumber(1000,9999);
+	printf("your ping is %d\n",pin);
+	FILE *usersFile = fopen("login/users.txt","r");
+	FILE *tempFile  = fopen("login/temp.txt","w");
+	linesInUsersTxt = countLinesInFile("login/users.txt");
+	for(int i=1;i<=linesInUsersTxt;i++){
+		fscanf(usersFile,"%s %s %s %d %d",mobile,pass,fname,&fLogin,&eachUserPin);
+		if (strcmp(currentUserMobile,mobile)==0){
+			fprintf(tempFile,"%s %s %s %d %d\n",mobile,newPass,fname,0,pin);
+		}
+		else{
+			fprintf(tempFile,"%s %s %s %d %d\n",mobile,pass,fname,fLogin,eachUserPin);
+		}
 	}
-	printf("enter pin : ");
-	scanf("%d",&pin);
-	printf("%d",pin);
+	fclose(usersFile);
+	fclose(tempFile);
+	remove("login/users.txt");
+	// rename("login/temp.txt","login/users.txt");
+	// rename("fileFormat.txt","filefomrat.txt");
+	colorize("New Password and Transaction Pin Udated Successfully\n","green");
+	
+
+}
+
+int countLinesInFile(char filename[]){
+	int lines = 0;
+	FILE *fp = fopen(filename,"r");
+	while(!feof(fp)){
+		if (fgetc(fp)=='\n'){
+			lines ++;
+		}
+	}
+	fclose(fp);
+	return lines;
 
 }
