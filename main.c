@@ -274,7 +274,7 @@ void registerUser()
 	// strcpy(tempPass,tempPass2);
 	FILE *userFile;
 	userFile = fopen("login/users.txt","a");
-	fprintf(userFile, "%s %s %s 1\n",customer.number,tempPass,customer.firstname );
+	fprintf(userFile, "%s %s %s 1 9999\n",customer.number,tempPass,customer.firstname );
 	fclose(userFile);
  	colorize("User is registered Successfully\n","green");
  	printf("Account No.\t: %ld\n",ac);
