@@ -11,8 +11,8 @@
 
 void login();
 void autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
-void userDashboard(char username[]);
-void adminDashboard(char username[]);
+void userDashboard();
+void adminDashboard();
 void clear();
 int askForNumber(int min,int max);//allows to choose number betn min and max
 long int accountNumber();
@@ -21,16 +21,24 @@ void registerUser();
 float checkBalance(long int ac);
 int checkOs();
 void colorize(char msg[],char colorName[]);
+char *colorizeReturn(char msg[],char colorName[]);
 char *color(char colorName[]);
 void cleanStdin();
 int generateCharacter(int min,int max);
 char *generateRandomPassword();
+void listUsers();
+void firstTimeLogin();
+
+// global variables
+char currentUser[20],currentUserMobile[15],currentUserAc[15];
+int firstLogin;
 
 
 
 
 struct customers
 {
+	long int ac;
     char firstname[20],lastname[20];
     char number[15];
     char gender[10];
@@ -41,18 +49,26 @@ struct customers
 
 int main(){
 	clear();
-	char pass[5];
-	strcpy(pass,generateRandomPassword());
-	printf("%s",pass);
-	colorize("red\n","red");
-	colorize("blue\n","blue");
-	colorize("green\n","green");
-	colorize("magenta\n","magenta");
-	colorize("yellow\n","yellow");
-	colorize("cyan\n","cyan");
-	colorize("white\n","white");
-	colorize("okaay","green");
-	login();
+	// char pass[5];
+	// strcpy(pass,generateRandomPassword());
+	// printf("%s",pass);
+	// colorize("red\n","red");
+	// colorize("blue\n","blue");
+	// colorize("green\n","green");
+	// colorize("magenta\n","magenta");
+	// colorize("yellow\n","yellow");
+	// colorize("cyan\n","cyan");
+	// colorize("white\n","white");
+	// colorize("okaay","green");
+	// float userbal = checkBalance(1628653776);
+	// printf("%f",userbal);
+	// registerUser();
+	// clear();
+	listUsers();
+	firstTimeLogin();
+	// printf("%s",colorizeReturn("okay","blueUnderline"));
+
+
 	return 0;
 }
 
@@ -78,11 +94,16 @@ void login(){
 	#ifdef __WIN32
 	int i=0;
 	do{
-		password[i] = getch();
-		if (password[i]!=13){
+		password[i] = getch();		
+		if (password[i]!=13 && password[i]!=8){
 			printf("*");
 		}
-		i++;
+		if (password[i] == 8){
+			i--;
+		}else{
+			i++;
+		}
+		
 	}while(password[i-1]!=13);
 	password[i-1] = '\0';
 	#endif
@@ -107,15 +128,16 @@ void autheticate(char username[],char password[],char role){
 	FILE *fp;
 	fp = fopen(filename,"r");
 	while (!feof(fp)){
-		fscanf(fp,"%s %s %s",user,pass,fname);
+		fscanf(fp,"%s %s %s %d",user,pass,fname,&firstLogin);
 		if (strcmp(username,user)==0 && strcmp(password,pass)==0){
 			clear();
 			if (role=='a'){
-				adminDashboard(username);
+				strcpy(currentUser,username); //setting up value for global variable "currentUser"
+				adminDashboard();
 			}
 			else{
-
-				userDashboard(fname);
+				strcpy(currentUser,fname);
+				userDashboard();
 			}
 			usrFound = 1;
 		}
@@ -125,17 +147,22 @@ void autheticate(char username[],char password[],char role){
 	}
 }
 
-void userDashboard(char username[]){
+void userDashboard(){
 
-	printf("welcome to user dashboard,");
-	strcpy(username,strcat(username,"\n"));
-	colorize(username,"cyan");
+	printf("welcome to user dashboard, %s\n",colorizeReturn(currentUser,"cyan"));
+	// strcpy(username,strcat(username,"\n"));
+	// colorize(username,"cyan");
+	if (firstLogin==1){
+		printf("Looks like you are a new user\n");
+		printf("Secure you account by changing password and transaction pin\n");
+		firstTimeLogin();
+	}
 	printf("currently incomplete,will be completed soon\n");
 
 }
-void adminDashboard(char username[]){
+void adminDashboard(){
 	
-	printf("welcome to admin dashboard, %s\n",username );
+	printf("welcome to admin dashboard, %s\n",currentUser );
 	printf("currently incomplete,will be completed soon\n");	
 }
 
@@ -244,9 +271,13 @@ void registerUser()
 	// strcpy(tempPass,tempPass2);
 	FILE *userFile;
 	userFile = fopen("login/users.txt","a");
-	fprintf(userFile, "%s %s %s\n",customer.number,tempPass,customer.firstname );
+	fprintf(userFile, "%s %s %s 1\n",customer.number,tempPass,customer.firstname );
 	fclose(userFile);
  	colorize("User is registered Successfully\n","green");
+ 	printf("Account No.\t: %ld\n",ac);
+ 	printf("Username \t: %s\n",customer.number);
+ 	printf("Password \t: %s\n",tempPass);
+ 	printf("\nChange password and set transation pin on first login\n");
 
  
  }
@@ -257,18 +288,18 @@ float checkBalance(long int ac){
  	char line[30];
  	long int acFromFile;
  	float userBalance;
+	char number[15];
  	while (!feof(fp)){
  		// fscanf(fp,"%ld %f",&acFromFile,&userBalance);
  		if( fgets (line, 60, fp)!=NULL ) {
 	      /* writing content to stdout */
-	      sscanf(line,"%ld %f",&acFromFile,&userBalance);
+	      sscanf(line,"%ld %s %f",&acFromFile,number,&userBalance);
 	      if (ac==acFromFile){
-	      	printf("%ld\t%f\n",acFromFile,userBalance );
+	      	printf("%ld\t%s\t%f\n",acFromFile,number,userBalance );
+			return userBalance;
 	      }
 
 	   }
-
- 		// printf("%ld\t%f\n",acFromFile,userBalance );
 
  	}
  }
@@ -307,10 +338,19 @@ float checkBalance(long int ac){
 	else if (strcmp(colorName,"reset")==0){
 		return "\033[1;m";
 	}
+	else if (strcmp(colorName,"blueUnderline")==0){
+		return "\033[1;34;4m";
+	}
 }
 
 void colorize(char msg[],char colorName[]){
 	printf("%s%s%s",color(colorName),msg,color("reset"));
+}
+
+char * colorizeReturn(char msg[],char colorName[]){
+	static char tempString[200];
+	sprintf(tempString,"%s%s%s",color(colorName),msg,color("reset"));
+	return tempString;
 }
 
 int generateCharacter(int min,int max){	
@@ -336,4 +376,50 @@ char *generateRandomPassword(){
 		}
 	}
 	return pass;
+}
+
+void listUsers(){
+	FILE *fp;
+	char firstname[20],lastname[20],number[20],gender[20],DOB[20],ac[20],fullname[50];
+	int age;
+
+	char line[200];
+	int counter=0;
+	fp = fopen("details/customerdetails.txt","r");
+	printf("%s",colorizeReturn("Acc no.\t\tName\t\t\tNumber\t\tGender\tAge\tDOB\n","blueUnderline"));
+	while(!feof(fp)){
+		if (fgetc(fp)=='\n'){
+			counter ++;
+		}
+	}
+	rewind(fp); // take pointer to beginning of the file
+	// printf("%d",counter);
+	for (int i=1;i<=counter;i++){
+		fscanf(fp,"%s %s %s %s %s %d %s",ac,firstname,lastname,number,gender,&age,DOB);
+		sprintf(fullname,"%s %s",firstname,lastname);
+		printf("%s\t%s\t\t%s\t%s\t%d\t%s\n",ac,fullname,number,gender,age,DOB);
+	    
+		// fscanf(fp,"%[^\n]s",line); //take a line input at once
+		// printf("%s",line);
+		
+	}
+}
+
+void firstTimeLogin(){
+	char newPass[30],confirmPass[30];
+	int pin;
+	printf("Enter New Password : ");
+	gets(newPass);
+	printf("Enter Confirm Pass : ");
+	gets(confirmPass);
+	if (strcmp(newPass,confirmPass)==0){
+		printf("okey we are in");
+	}
+	else{
+		printf("oh snap wrong again");
+	}
+	printf("enter pin : ");
+	scanf("%d",&pin);
+	printf("%d",pin);
+
 }
