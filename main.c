@@ -224,7 +224,7 @@ int isFolder(char dirName[]){
 
 void clear(){
 	#ifdef __WIN32
-	system("clear");
+	system("cls");
 	#endif
 	#ifdef linux
 	system("clear");
@@ -409,6 +409,7 @@ void listUsers(){
 void firstTimeLogin(){
 	char newPass[30],confirmPass[30];
 	int pin,linesInUsersTxt;
+	cleanStdin();
 	while (1){
 		printf("Enter New Password : ");
 		gets(newPass);
