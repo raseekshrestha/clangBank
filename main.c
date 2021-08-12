@@ -55,7 +55,8 @@ int main(){
 	// int lines= countLinesInFile("login/users.txt");
 	// printf("no of lines : %d",lines);
 	// login();
-	login();
+	listUsers();
+
 	// FILE *fp = fopen("login/hh.txt","r");
 
 	// rename("login/hh.css","login/temp.txt");
@@ -112,7 +113,7 @@ void login(){
 int autheticate(char username[],char password[],char role){
 	// take username,password and role, validate credentials and redirect to corresponding dashboard//error
 	char filename[20];
-	int usrFound = 0;
+	int usrFound =0,pin;
 	char user[50],pass[50],fname[30];
 	if (role == 'a'){
 		strcpy(filename,"login/admin.txt");
@@ -123,7 +124,8 @@ int autheticate(char username[],char password[],char role){
 	FILE *fp;
 	fp = fopen(filename,"r");
 	while (!feof(fp)){
-		fscanf(fp,"%s %s %s %d",user,pass,fname,&firstLogin);
+		fscanf(fp,"%s %s %s %d %d",user,pass,fname,&firstLogin,&pin);
+		printf("checking with %s and %s\n",user,pass);
 		if (strcmp(username,user)==0 && strcmp(password,pass)==0){
 			
 			clear();
@@ -141,8 +143,8 @@ int autheticate(char username[],char password[],char role){
 				userDashboard();
 				
 			}
-			return 0;
 			usrFound = 1;
+			return 0;			
 		}
 	}
 	if (!usrFound){
