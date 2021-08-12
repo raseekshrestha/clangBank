@@ -10,7 +10,7 @@
 
 
 void login();
-void autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
+int autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
 void userDashboard();
 void adminDashboard();
 void clear();
@@ -49,12 +49,13 @@ struct customers
 
 
 int main(){
+	srand(time(0));
 	clear();
 	
 	int lines= countLinesInFile("login/users.txt");
 	printf("no of lines : %d",lines);
-	login();
-	// registerUser();
+	// login();
+	registerUser();
 	// FILE *fp = fopen("login/hh.txt","r");
 
 	// rename("login/hh.css","login/temp.txt");
@@ -108,7 +109,7 @@ void login(){
 
 }
 
-void autheticate(char username[],char password[],char role){
+int autheticate(char username[],char password[],char role){
 	// take username,password and role, validate credentials and redirect to corresponding dashboard//error
 	char filename[20];
 	int usrFound = 0;
@@ -127,24 +128,27 @@ void autheticate(char username[],char password[],char role){
 			
 			clear();
 			if (role=='a'){
+				fclose(fp);
 				strcpy(currentUser,username); //setting up value for global variable "currentUser"
 				adminDashboard();
+				
 			}
 			else{
+				fclose(fp);
 				strcpy(currentUser,fname); // third entry is fname in users.txt
 				strcpy(currentUserMobile,user); // first entry is ac num " "
 				// strcpy(currentUserMobile,)
 				userDashboard();
+				
 			}
+			return 0;
 			usrFound = 1;
 		}
 	}
 	if (!usrFound){
 		colorize("\nIncorrect username or password.\n","red");
 	}
-	fclose(fp);
 	
-
 }
 
 void userDashboard(){
@@ -426,9 +430,10 @@ void firstTimeLogin(){
 	char mobile[20],pass[20],fname[20];
 	int fLogin,eachUserPin;
 	pin = askForNumber(1000,9999);
-	printf("your ping is %d\n",pin);
-	FILE *usersFile = fopen("login/users.txt","r");
-	FILE *tempFile  = fopen("login/temp.txt","w");
+	FILE *usersFile;
+	usersFile = fopen("login/users.txt","r");
+	FILE *tempFile;
+	tempFile  = fopen("login/temp.txt","w");
 	linesInUsersTxt = countLinesInFile("login/users.txt");
 	for(int i=1;i<=linesInUsersTxt;i++){
 		fscanf(usersFile,"%s %s %s %d %d",mobile,pass,fname,&fLogin,&eachUserPin);
@@ -441,10 +446,13 @@ void firstTimeLogin(){
 	}
 	fclose(usersFile);
 	fclose(tempFile);
-	remove("login/users.txt");
-	// rename("login/temp.txt","login/users.txt");
-	// rename("fileFormat.txt","filefomrat.txt");
-	colorize("New Password and Transaction Pin Udated Successfully\n","green");
+	if (remove("login/users.txt") == 0 && rename("login/temp.txt","login/users.txt") ==0){
+		colorize("New Password and Transaction Pin Udated Successfully\n","green");
+	}
+	else{
+		colorize("unable to remove the file\n","red"); 
+	}
+	
 	
 
 }
