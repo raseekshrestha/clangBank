@@ -52,10 +52,10 @@ int main(){
 	srand(time(0));
 	clear();
 	
-	int lines= countLinesInFile("login/users.txt");
-	printf("no of lines : %d",lines);
+	// int lines= countLinesInFile("login/users.txt");
+	// printf("no of lines : %d",lines);
 	// login();
-	registerUser();
+	login();
 	// FILE *fp = fopen("login/hh.txt","r");
 
 	// rename("login/hh.css","login/temp.txt");
@@ -393,7 +393,7 @@ void listUsers(){
 	int age;
 
 	char line[200];
-	int counter = countLinesInFile("details.customerdetails.txt");
+	int counter = countLinesInFile("details/customerdetails.txt");
 	fp = fopen("details/customerdetails.txt","r");
 	printf("%s",colorizeReturn("Acc no.\t\tName\t\t\tNumber\t\tGender\tAge\tDOB\n","blueUnderline"));
 	// rewind(fp); // take pointer to beginning of the file
