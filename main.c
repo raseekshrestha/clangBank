@@ -29,6 +29,10 @@ char *generateRandomPassword();
 void listUsers();
 void firstTimeLogin();
 int countLinesInFile(char filename[]);
+int mobileNumberExists(char mobileNumber[]);
+void addBalance(char mobileNumber[],float amount);
+void depositMoney(char mobileNumber[],float amount);
+
 
 // global variables
 char currentUser[20],currentUserMobile[15],currentUserAc[15];
@@ -55,8 +59,9 @@ int main(){
 	// int lines= countLinesInFile("login/users.txt");
 	// printf("no of lines : %d",lines);
 	// login();
-	listUsers();
-
+	// int num = mobileNumberExists("123456789");
+	// printf("result is %d",num);
+	depositMoney("987654321",50.5);
 	// FILE *fp = fopen("login/hh.txt","r");
 
 	// rename("login/hh.css","login/temp.txt");
@@ -470,4 +475,55 @@ int countLinesInFile(char filename[]){
 	fclose(fp);
 	return lines;
 
+}
+
+
+int mobileNumberExists(char mobileNumber[]){
+	char filename[30] = "details/customerdetails.txt";
+	int lines = countLinesInFile(filename);
+	char ac[10],fname[20],lname[20],num[15],gender[10],dob[15];
+	int age;
+	FILE *fp = fopen(filename,"r");
+	for (int i=1;i<=lines;i++){
+		fscanf(fp,"%s %s %s %s %s %d %s",ac,fname,lname,num,gender,&age,dob);
+		if (strcmp(mobileNumber,num)==0){
+			fclose(fp);
+			return 1;
+		}
+	}
+	fclose(fp);
+	return 0;
+}
+
+void addBalance(char mobileNumber[],float amount){
+	char filename[30] = "balance/allbalances.txt";
+	int lines = countLinesInFile(filename);
+	char ac[15],num[15];
+	float balance;
+	FILE *fp = fopen(filename,"r");
+	FILE *tempFile = fopen("balance/temp.txt","w");
+	for (int i=1;i<=lines;i++){
+		fscanf(fp,"%s %s %f",ac,num,&balance);
+		if (strcmp(mobileNumber,num)==0){
+			fprintf(tempFile,"%s %s %f\n",ac,num,balance+amount);
+		}
+		else{
+			fprintf(tempFile,"%s %s %f\n",ac,num,balance);
+		}
+	}
+	fclose(fp);
+	fclose(tempFile);
+	remove(filename);
+	rename("balance/temp.txt",filename);
+	printf("Blance transferred successfully");
+
+}
+
+void depositMoney(char mobileNumber[],float amount){
+	if (mobileNumberExists(mobileNumber)){
+		addBalance(mobileNumber,amount);
+	}
+	else{
+		colorize("Given Mobile number doesn't exist in our database\n","red");
+	}
 }
