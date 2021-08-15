@@ -4,9 +4,11 @@
 #include <time.h>
 #include <dirent.h>
 #include <errno.h>
+#include <unistd.h>
 #ifdef __WIN32
 #include <conio.h>
 #endif
+
 
 
 void login();
@@ -18,7 +20,7 @@ int askForNumber(int min,int max);//allows to choose number betn min and max
 long int accountNumber();
 int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
-float checkBalance(long int ac);
+float checkBalance(char ac[]);
 int checkOs();
 void colorize(char msg[],char colorName[]);
 char *colorizeReturn(char msg[],char colorName[]);
@@ -31,7 +33,10 @@ void firstTimeLogin();
 int countLinesInFile(char filename[]);
 int mobileNumberExists(char mobileNumber[]);
 void addBalance(char mobileNumber[],float amount);
-void depositMoney(char mobileNumber[],float amount);
+int depositMoney(char mobileNumber[],float amount);
+void transferMoney(char toMobile[],float amount); //login to user acc before transferring as sender mobile is global variable set in authenticate()
+int sendNotification(char msg[],char filename[]); //filename is {number}.txt
+int removeAndRename(char tempFile[],char originalFile[]);
 
 
 // global variables
@@ -60,10 +65,14 @@ int main(){
 	// printf("no of lines : %d",lines);
 	// login();
 	// int num = mobileNumberExists("123456789");
-	// printf("result is %d",num);
-	depositMoney("987654321",50.5);
-	// FILE *fp = fopen("login/hh.txt","r");
+	// login();
+	// printf("result is %s",currentUserMobile);
 
+	// float balance = checkBalance(currentUserMobile);
+	// printf("balance is %f",balance);
+	depositMoney("987654321",5.5);
+	// FILE *fp = fopen("login/hh.txt","r");
+	// sendNotification("test the freaking notification","9887.txt");
 	// rename("login/hh.css","login/temp.txt");
 	// fclose(fp);
 	// remove("login/temp.txt");
@@ -228,7 +237,7 @@ int isFolder(char dirName[]){
     	char cmd[20];
     	sprintf(cmd,"mkdir %s",dirName);
     	system(cmd);	
-    	return 0;
+    	return 2;
     }
 
 }
@@ -296,26 +305,25 @@ void registerUser()
  
  }
 
-float checkBalance(long int ac){
+float checkBalance(char number[]){
  	FILE *fp;
  	fp = fopen("balance/allbalances.txt","r");
  	char line[30];
- 	long int acFromFile;
+ 	char acFromFile[15];
  	float userBalance;
-	char number[15];
+	char userNumber[15];
  	while (!feof(fp)){
  		// fscanf(fp,"%ld %f",&acFromFile,&userBalance);
  		if( fgets (line, 60, fp)!=NULL ) {
 	      /* writing content to stdout */
-	      sscanf(line,"%ld %s %f",&acFromFile,number,&userBalance);
-	      if (ac==acFromFile){
-	      	printf("%ld\t%s\t%f\n",acFromFile,number,userBalance );
+	      sscanf(line,"%s %s %f",acFromFile,userNumber,&userBalance);
+	      if (strcmp(userNumber,number)==0){
+	      	// printf("%s\t%s\t%f\n",acFromFile,userNumber,userBalance );
 	      	fclose(fp);
 			return userBalance;
 	      }
 
 	   }
-
  	}
  	fclose(fp);
  }
@@ -515,15 +523,83 @@ void addBalance(char mobileNumber[],float amount){
 	fclose(tempFile);
 	remove(filename);
 	rename("balance/temp.txt",filename);
-	printf("Blance transferred successfully");
 
 }
 
-void depositMoney(char mobileNumber[],float amount){
+int depositMoney(char mobileNumber[],float amount){
 	if (mobileNumberExists(mobileNumber)){
 		addBalance(mobileNumber,amount);
+		char notificationFileName[20],message[100];
+		// currentUserMobile is not used because depositMoney is used by admin as well
+		sprintf(notificationFileName,"%s.txt",mobileNumber);
+		sprintf(message,"Bank Deposit : Rs. %.2f",amount);
+		sendNotification(message,notificationFileName);
+		return 1;
 	}
 	else{
 		colorize("Given Mobile number doesn't exist in our database\n","red");
+		return 0;
+	}
+}
+
+void transferMoney(char toMobile[],float amount){
+	
+	if (mobileNumberExists(toMobile)){
+		// printf("\n\n\nmobile number %s exists now transferring money",toMobile);
+		float balance = checkBalance(currentUserMobile);
+		char message[100];
+		if (balance >= amount){
+			if (depositMoney(toMobile,amount) && depositMoney(currentUserMobile,-1*amount)){
+				sprintf(message,"transferred Rs.%.2f to %s\n",amount,toMobile);
+				colorize(message,"green");
+				//sending notification
+				char notificationFileName[20];
+				sprintf(notificationFileName,"%s.txt",currentUserMobile);
+				sendNotification(message,notificationFileName);
+			}
+		}
+		else{
+			colorize("Insufficient balance\n","red");
+		}
+	}
+	else{
+		colorize("given Mobile number doesn't exists in out database","red");
+	}
+}
+
+
+int sendNotification(char msg[],char filename[]){
+	char path[15] = "notifications",eachLine[200],originalFile[20];
+	isFolder(path);
+	sprintf(originalFile,"%s/%s",path,filename);
+	printf("filename : %s\n",originalFile);
+	if( access( originalFile, F_OK ) != 0 ){
+		// if file do not exists directly write the notification
+    	FILE *notify = fopen(originalFile,"w");
+    	fprintf(notify,"%s\n",msg);
+    	fclose(notify);
+	}
+	else {
+	    // if file exists write the notification to first line and copy rest from the originalFile and perform removeAndRename
+		FILE *notify = fopen(originalFile,"r");
+		FILE *tempFile = fopen("notifications/temp.txt","w");
+		fprintf(tempFile,"%s\n",msg);
+		int linesInOriginalFile = countLinesInFile(originalFile);
+		for (int i=1;i<=linesInOriginalFile;i++){
+			fscanf(notify,"%[^\n]s",eachLine);
+			fprintf(tempFile,"%s\n",eachLine);
+		}
+		fclose(notify);
+		fclose(tempFile);
+		removeAndRename("notifications/temp.txt",originalFile);
+	}
+}
+
+int removeAndRename(char tempFile[],char originalFile[]){
+	if (remove(originalFile) == 0 && rename(tempFile,originalFile) ==0){
+		return 1;
+	}
+	else{
+		return 0;
 	}
 }
