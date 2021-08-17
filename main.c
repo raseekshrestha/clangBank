@@ -68,7 +68,21 @@ int main(){
 	// login();
 	// int num = mobileNumberExists("123456789");
 	// superNotification("this is super notification sent by admin");
+	// superNotification("just a fuckcing thing");
+	int res = depositMoney("987654321",10000);
+	if (res == 1){
+		printf("sending Notification to you\n");
+		sendNotification("bank deposit success rs. 10000\n","987654321.txt");
+	}
+	else{
+		printf("failed to deposit money");
+	}
 	login();
+	int tx = transferMoney("1234567890",100);
+	if (tx==1){
+		printf("transaction successful send notication now\n");
+		
+	}
 	// printf("result is %s",currentUserMobile);
 
 	// float balance = checkBalance(currentUserMobile);
@@ -482,9 +496,6 @@ void firstTimeLogin(){
 	else{
 		colorize("unable to remove the file\n","red"); 
 	}
-	
-	
-
 }
 
 int countLinesInFile(char filename[]){
@@ -558,16 +569,24 @@ int transferMoney(char toMobile[],float amount){
 	if (mobileNumberExists(toMobile)){
 		// printf("\n\n\nmobile number %s exists now transferring money",toMobile);
 		float balance = checkBalance(currentUserMobile);
-		char message[100];
+		char message[100],filename[30];
 		if (balance >= amount){
 			if (depositMoney(toMobile,amount) && depositMoney(currentUserMobile,-1*amount)){
-				// disp success message after function returns 1
-				// sprintf(message,"transferred Rs.%.2f to %s\n",amount,toMobile);
-				// colorize(message,"green");
-				//sending notification
-				char notificationFileName[20];
-				sprintf(notificationFileName,"%s.txt",currentUserMobile);
-				sendNotification(message,notificationFileName);
+				// disp success message after function returns 
+				sprintf(message,"transferred Rs.%.2f to %s",amount,toMobile);
+				colorize(message,"green");
+				printf("\n");
+				
+				//sending notification to both sender and receiver
+				
+				sprintf(filename,"%s.txt",currentUserMobile);
+				sendNotification(message,filename); //sender
+
+				sprintf(filename,"%s.txt",toMobile);
+				sprintf(message,"Received Rs.%.2f from %s",amount,currentUserMobile);
+				sendNotification(message,filename); //receiver
+
+
 				return 1;
 			}
 		}
