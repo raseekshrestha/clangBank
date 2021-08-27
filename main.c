@@ -39,6 +39,8 @@ int sendNotification(char msg[],char number[]);
 int removeAndRename(char tempFile[],char originalFile[]);
 void showNotifications();
 void superNotification(char msg[]);
+int changePasswordOrPin(char choice[]);
+char * askPassword();
 
 
 // global variables
@@ -69,20 +71,10 @@ int main(){
 	// int num = mobileNumberExists("123456789");
 	// superNotification("this is super notification sent by admin");
 	// superNotification("just a fuckcing thing");
-	int res = depositMoney("987654321",10000);
-	if (res == 1){
-		printf("sending Notification to you\n");
-		sendNotification("bank deposit success rs. 10000","987654321");
-	}
-	else{
-		printf("failed to deposit money");
-	}
-	// login();
-	int tx = transferMoney("1234567890",100);
-	if (tx==1){
-		printf("transaction successful send notication now\n");
-		
-	}
+	changePasswordOrPin("password");
+	// char password[30];
+	// strcpy(password,askPassword());
+	// printf("%s\n",password);
 
 
 	return 0;
@@ -107,25 +99,7 @@ void login(){
 	printf("Username : ");
 	scanf("%s",username);
 	printf("Password : ");
-	#ifdef __WIN32
-	int i=0;
-	do{
-		password[i] = getch();		
-		if (password[i]!=13 && password[i]!=8){
-			printf("*");
-		}
-		if (password[i] == 8){
-			i--;
-		}else{
-			i++;
-		}
-		
-	}while(password[i-1]!=13);
-	password[i-1] = '\0';
-	#endif
-	#ifdef linux
-	scanf("%s",password);
-	#endif
+	strcpy(password,askPassword());
 	autheticate(username,password,role);
 
 }
@@ -658,4 +632,120 @@ void superNotification(char msg[]){
 		// sprintf(notificationFileName,"%s.txt",num);
 		sendNotification(msg,num);
 	}
+}
+
+int changePasswordOrPin(char choice[]){
+	int lines = countLinesInFile("login/users.txt"),firstLogin,pin;
+	char number[15],orgpass[30],fname[20];
+	FILE *fp = fopen("login/users.txt","r");
+	for (int i=1;i<=lines;i++){
+		fscanf(fp,"%s %s %s %d %d",number,orgpass,fname,&firstLogin,&pin);
+		if (strcmp(number,currentUserMobile)==0){
+			break;
+		}
+	}
+	printf("old pass is %s \n",orgpass);
+	char oldPass[30],newPass[30],confirmPass[30];
+	int oldPin,newPin;
+	while (1){
+		if (strcmp(choice,"password")==0){
+			printf("Old pass\t\t: ");
+			strcpy(oldPass,askPassword());
+			printf("you entered %s \n",oldPass);
+
+			if (strcmp(oldPass,orgpass)==0){
+				break;
+			}
+			else{
+				colorize("\nIncorrect Old password\n","red");
+			}	
+		}
+		else if (strcmp(choice,"pin")==0){
+			printf("Old Pin\t:");
+			oldPin = askForNumber(1000,9999);
+			if (oldPin == pin){
+				break;
+			}
+			else{
+				colorize("\nIncorrect Old pin\n","red");
+			}
+
+		}
+	}
+	while (1){
+		if (strcmp(choice,"password")==0){
+			printf("\nNew pass\t\t: ");
+			strcpy(newPass,askPassword());
+			printf("\nConfirm pass\t: ");
+			strcpy(confirmPass,askPassword());
+			if (strcmp(newPass,confirmPass)==0){
+				break;
+			}
+			else{
+				colorize("\nNew Password and Confirm Password doesn't match\n","red");
+			}	
+		}
+		else if (strcmp(choice,"pin")==0){
+			printf("\nNew Pin\t: ");
+			newPin = askForNumber(1000,9999);
+			break;
+
+		}
+	}
+	rewind(fp);
+	FILE *temp = fopen("login/tempusers.txt","w");
+	for (int i=1;i<=lines;i++){
+		fscanf(fp,"%s %s %s %d %d",number,orgpass,fname,&firstLogin,&pin);
+		if (strcmp(number,currentUserMobile)==0){
+			if (strcmp(choice,"password")==0){
+				fprintf(temp,"%s %s %s %d %d\n",number,newPass,fname,firstLogin,pin);
+			}
+			else if (strcmp(choice,"pin")==0){
+				fprintf(temp,"%s %s %s %d %d\n",number,orgpass,fname,firstLogin,newPin);
+			}
+		}
+		else{
+			fprintf(temp,"%s %s %s %d %d\n",number,orgpass,fname,firstLogin,pin);
+		}
+	}
+	fclose(fp);
+	fclose(temp);
+	char msg[100];
+	if (removeAndRename("login/tempusers.txt","login/users.txt")){
+		sprintf(msg,"%s changed Successfully\n",choice);
+		colorize(msg,"green");
+		sprintf(msg,"%s Changed Successfully, if you didn't request a new %s contact nearest branch immediately",choice,choice);
+		sendNotification(msg,currentUserMobile);
+	}
+	else{
+		colorize("\nError Occured\n","red");
+	}
+	
+
+
+}
+
+char * askPassword(){
+	static char password[30];
+	#ifdef __WIN32
+	int i=0;
+	do{
+		password[i] = getch();		
+		if (password[i]!=13 && password[i]!=8){
+			printf("*");
+		}
+		if (password[i] == 8){
+			i--;
+		}else{
+			i++;
+		}
+		
+	}while(password[i-1]!=13);
+	password[i-1] = '\0';
+	#endif
+	#ifdef linux
+	scanf("%s",password);
+	#endif
+	return password;
+
 }
