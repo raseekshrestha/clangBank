@@ -71,7 +71,7 @@ int main(){
 	// int num = mobileNumberExists("123456789");
 	// superNotification("this is super notification sent by admin");
 	// superNotification("just a fuckcing thing");
-	changePasswordOrPin("password");
+	login();
 	// char password[30];
 	// strcpy(password,askPassword());
 	// printf("%s\n",password);
@@ -411,17 +411,17 @@ void firstTimeLogin(){
 	cleanStdin();
 	while (1){
 		printf("Enter New Password : ");
-		gets(newPass);
-		printf("Enter Confirm Pass : ");
-		gets(confirmPass);
+		strcpy(newPass,askPassword());
+		printf("\nEnter Confirm Pass : ");
+		strcpy(confirmPass,askPassword());
 		if (strcmp(newPass,confirmPass)==0){
 			break;
 		}
 		else{
-			colorize("New password and Confirm Password doesn't match\nTry again\n","red");
+			colorize("\nNew password and Confirm Password doesn't match\nTry again\n","red");
 		}
 	}
-	printf("enter 4 digit pin code. ");
+	printf("\nenter 4 digit pin code. ");
 	char mobile[20],pass[20],fname[20];
 	int fLogin,eachUserPin;
 	pin = askForNumber(1000,9999);
@@ -644,14 +644,12 @@ int changePasswordOrPin(char choice[]){
 			break;
 		}
 	}
-	printf("old pass is %s \n",orgpass);
 	char oldPass[30],newPass[30],confirmPass[30];
 	int oldPin,newPin;
 	while (1){
 		if (strcmp(choice,"password")==0){
-			printf("Old pass\t\t: ");
+			printf("Old pass\t: ");
 			strcpy(oldPass,askPassword());
-			printf("you entered %s \n",oldPass);
 
 			if (strcmp(oldPass,orgpass)==0){
 				break;
@@ -674,7 +672,7 @@ int changePasswordOrPin(char choice[]){
 	}
 	while (1){
 		if (strcmp(choice,"password")==0){
-			printf("\nNew pass\t\t: ");
+			printf("\nNew pass\t: ");
 			strcpy(newPass,askPassword());
 			printf("\nConfirm pass\t: ");
 			strcpy(confirmPass,askPassword());
@@ -682,7 +680,7 @@ int changePasswordOrPin(char choice[]){
 				break;
 			}
 			else{
-				colorize("\nNew Password and Confirm Password doesn't match\n","red");
+				colorize("\n\nNew Password and Confirm Password doesn't match\n","red");
 			}	
 		}
 		else if (strcmp(choice,"pin")==0){
@@ -712,7 +710,7 @@ int changePasswordOrPin(char choice[]){
 	fclose(temp);
 	char msg[100];
 	if (removeAndRename("login/tempusers.txt","login/users.txt")){
-		sprintf(msg,"%s changed Successfully\n",choice);
+		sprintf(msg,"\n%s changed Successfully\n",choice);
 		colorize(msg,"green");
 		sprintf(msg,"%s Changed Successfully, if you didn't request a new %s contact nearest branch immediately",choice,choice);
 		sendNotification(msg,currentUserMobile);
