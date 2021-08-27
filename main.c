@@ -35,14 +35,14 @@ int mobileNumberExists(char mobileNumber[]);
 void addBalance(char mobileNumber[],float amount);
 int depositMoney(char mobileNumber[],float amount);
 int transferMoney(char toMobile[],float amount); //login to user acc before transferring as sender mobile is global variable set in authenticate()
-int sendNotification(char msg[],char filename[]); //filename is {number}.txt
+int sendNotification(char msg[],char number[]); 
 int removeAndRename(char tempFile[],char originalFile[]);
 void showNotifications();
 void superNotification(char msg[]);
 
 
 // global variables
-char currentUser[20],currentUserMobile[15],currentUserAc[15];
+char currentUser[20],currentUserMobile[15]="987654321",currentUserAc[15];
 int firstLogin;
 
 
@@ -72,40 +72,17 @@ int main(){
 	int res = depositMoney("987654321",10000);
 	if (res == 1){
 		printf("sending Notification to you\n");
-		sendNotification("bank deposit success rs. 10000\n","987654321.txt");
+		sendNotification("bank deposit success rs. 10000","987654321");
 	}
 	else{
 		printf("failed to deposit money");
 	}
-	login();
+	// login();
 	int tx = transferMoney("1234567890",100);
 	if (tx==1){
 		printf("transaction successful send notication now\n");
 		
 	}
-	// printf("result is %s",currentUserMobile);
-
-	// float balance = checkBalance(currentUserMobile);
-	// printf("balance is %f",balance);
-	// char mobileNumber[20] = "1234567890";
-	// float amount = 67.1578;
-	// int res = depositMoney(mobileNumber,amount);
-	// printf("res is %d",res);
-	// if (res){		
-	// 	char notificationFileName[20],message[100];
-	// 	// currentUserMobile is not used because depositMoney is used by admin as well
-	// 	sprintf(notificationFileName,"%s.txt",mobileNumber);
-	// 	sprintf(message,"Bank Deposit : Rs. %.2f",amount);
-	// 	sendNotification(message,notificationFileName);
-	// 	printf("message : %s\n filename: %s\n",message,notificationFileName);
-	// }
-	// else{
-	// 	printf("error");
-	// }
-
-	// sendNotification("gyalalal this is awesome just what i neededs","notifiyu.txt");
-
-	// showNotifications();
 
 
 	return 0;
@@ -579,12 +556,12 @@ int transferMoney(char toMobile[],float amount){
 				
 				//sending notification to both sender and receiver
 				
-				sprintf(filename,"%s.txt",currentUserMobile);
-				sendNotification(message,filename); //sender
+				// sprintf(filename,"%s.txt",currentUserMobile);
+				sendNotification(message,currentUserMobile); //sender
 
-				sprintf(filename,"%s.txt",toMobile);
+				// sprintf(filename,"%s.txt",toMobile);
 				sprintf(message,"Received Rs.%.2f from %s",amount,currentUserMobile);
-				sendNotification(message,filename); //receiver
+				sendNotification(message,toMobile); //receiver
 
 
 				return 1;
@@ -601,7 +578,9 @@ int transferMoney(char toMobile[],float amount){
 }
 
 
-int sendNotification(char msg[],char filename[]){
+int sendNotification(char msg[],char number[]){
+	char filename[40];
+	sprintf(filename,"%s.txt",number);
 	char path[15] = "notifications",eachLine[200],originalFile[20],eachLine1[200];
 	isFolder(path);
 	sprintf(originalFile,"%s/%s",path,filename);
@@ -609,7 +588,7 @@ int sendNotification(char msg[],char filename[]){
 	if( access( originalFile, F_OK ) != 0 ){
 		// if file do not exists directly write the notification
     	FILE *notify = fopen(originalFile,"w");
-    	fprintf(notify,"%s\n",msg);
+    	fprintf(notify,"%s | %s\n",msg,__DATE__);
     	fclose(notify);
 	}
 	else {
@@ -617,13 +596,9 @@ int sendNotification(char msg[],char filename[]){
 	    // if file exists write the notification to first line and copy rest from the originalFile and perform removeAndRename
 		FILE *notify = fopen(originalFile,"r");
 		FILE *tempFile = fopen("notifications/temp.txt","w");
-		fprintf(tempFile,"%s\n",msg);
+		fprintf(tempFile,"%s | %s\n",msg,__DATE__);
 		int linesInOriginalFile = countLinesInFile(originalFile);
 		for (int i=1;i<=linesInOriginalFile;i++){
-			// fgets(eachLine,100,notify);
-			// fscanf(notify,"%[^\n]s",eachLine);
-			// sprintf(eachLine1,"%[^\n]s",eachLine);
-			// fprintf(tempFile,"%s\n",eachLine);
 			while (1){
 				ch = fgetc(notify);
 				if (ch !='\n'){
@@ -675,12 +650,12 @@ void superNotification(char msg[]){
 	int lines = countLinesInFile(customersFile);
 	char ac[10],fname[20],lname[20],num[15],gender[10],dob[15];
 	int age;
-	char notificationFileName[30];
+	// char notificationFileName[30];
 
 	FILE *fp = fopen(customersFile,"r");
 	for (int i=1;i<=lines;i++){
 		fscanf(fp,"%s %s %s %s %s %d %s",ac,fname,lname,num,gender,&age,dob);
-		sprintf(notificationFileName,"%s.txt",num);
-		sendNotification(msg,notificationFileName);
+		// sprintf(notificationFileName,"%s.txt",num);
+		sendNotification(msg,num);
 	}
 }
