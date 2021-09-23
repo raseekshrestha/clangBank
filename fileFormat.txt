@@ -17,12 +17,3 @@ login
 
 
 
-
-extras 
--> firstTimeLogin() is function and firstLogin is global vairable
-
-
-
-
-
-
