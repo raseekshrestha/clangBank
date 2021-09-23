@@ -66,16 +66,17 @@ struct customers
 int main(){
 	srand(time(0));
 	clear();
-	// login();
-	// transferMoney();
-	// superNotification("test of the super notification");
-	// printf("balance is %d\n",noOfUnseenNotification());
-	// login();
-	// depositMoney("9988",10001);
-	transferMoney("9861",100);
+	login();
+	// // transferMoney();
+	// // superNotification("test of the super notification");
+	// // printf("balance is %d\n",noOfUnseenNotification());
+	// // login();
+	// // depositMoney("9988",10001);
+	// transferMoney("9861",101);
+	// showNotifications();
 	// printf("No of notification for %s is %d\n",currentUserMobile,noOfUnseenNotification());
 
-	
+	// listUsers();
 
 
 
@@ -440,9 +441,11 @@ void firstTimeLogin(){
 	fclose(tempFile);
 	if (remove("login/users.txt") == 0 && rename("login/temp.txt","login/users.txt") ==0){
 		colorize("New Password and Transaction Pin Udated Successfully\n","green");
+		sendNotification("Password and pin Changed",currentUserMobile,0);
 	}
 	else{
-		colorize("unable to remove the file\n","red"); 
+		colorize("unable to remove the file\n","red");
+		sendNotification('Failed to remove file',currentUserMobile,0);
 	}
 }
 
@@ -523,9 +526,9 @@ int transferMoney(char toMobile[],float amount){
 				printf("\n");
 				
 				//sending notification to both sender and receiver
-				sendNotification(message,currentUserMobile,2); //sender
+				sendNotification(message,currentUserMobile,0); //sender
 				sprintf(message,"Received Rs.%.2f from %s",amount,currentUserMobile);
-				sendNotification(message,toMobile,2); //receiver
+				sendNotification(message,toMobile,0); //receiver
 				return 1;
 			}
 		}
@@ -604,6 +607,7 @@ void showNotifications(){
 			}
 		}
 	}
+	setUnseenNotification(currentUserMobile,-1);
 }
 
 
@@ -783,26 +787,26 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 		colorize("if old Account, and want to increase unseen notification number set its value to 0","red");
 		colorize("if old Account, and want to set unseen notification to 0 set its vlaue to -1","red");
 	}
-	FILE *fp = fopen("notifications/unseen_notifications.txt","a");
+	
 	if (isNew == 1){
+		FILE *fp = fopen("notifications/unseen_notifications.txt","r");	
 		fprintf(fp,"%s %d\n",number,1); // 1 = new account so unseen notification is set to 1
+		fclose(fp);
 	}
 	else{//increase number of unseen notification by 1 if isNew == 0 (not new account)
+		FILE *fp = fopen("notifications/unseen_notifications.txt","r");	
 		FILE *temp = fopen("notifications/temp.txt","w");
 		int lines = countLinesInFile("notifications/unseen_notifications.txt");
 		char mobile[20];
 		int unseenNum;
 		for (int i=1;i<=lines;i++){
-			fscanf(fp,"%s %d",mobile,&unseenNum);
-			
+			fscanf(fp,"%s %d\n",mobile,&unseenNum);
 			if (strcmp(mobile,number)==0){
 				if (isNew==0){
 					fprintf(temp,"%s %d\n",mobile,unseenNum+1);
-					printf("%s %d\n",mobile,unseenNum);
 				}
 				else{ // possible value here will be -1 so setting unseen Notification number to 0
 					fprintf(temp,"%s %d\n",mobile,0);
-					printf("%s 0\n",mobile);
 				}				
 			}
 			else{
@@ -810,6 +814,7 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 			}
 		}
 		fclose(temp);
-	}
-	fclose(fp);
+		fclose(fp);
+		removeAndRename("notifications/temp.txt","notifications/unseen_notifications.txt");
+	}	
 }
