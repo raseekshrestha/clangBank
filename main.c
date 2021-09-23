@@ -41,10 +41,10 @@ void showNotifications();
 void superNotification(char msg[]);
 int changePasswordOrPin(char choice[]);
 char * askPassword();
-
+void toHtml(char title[],char cols[][50],int noOfCols);
 
 // global variables
-char currentUser[20],currentUserMobile[15]="987654321",currentUserAc[15];
+char currentUser[20],currentUserMobile[15]="2020",currentUserAc[15];
 int firstLogin;
 
 
@@ -64,17 +64,8 @@ struct customers
 int main(){
 	srand(time(0));
 	clear();
-	
-	// int lines= countLinesInFile("login/users.txt");
-	// printf("no of lines : %d",lines);
-	// login();
-	// int num = mobileNumberExists("123456789");
-	// superNotification("this is super notification sent by admin");
-	// superNotification("just a fuckcing thing");
 	login();
-	// char password[30];
-	// strcpy(password,askPassword());
-	// printf("%s\n",password);
+
 
 
 	return 0;
@@ -396,10 +387,12 @@ void listUsers(){
 	printf("%s",colorizeReturn("Acc no.\t\tName\t\t\tNumber\t\tGender\tAge\tDOB\n","blueUnderline"));
 	// rewind(fp); // take pointer to beginning of the file
 	// printf("%d",counter);
+	char extraSpace[3];
 	for (int i=1;i<=counter;i++){
 		fscanf(fp,"%s %s %s %s %s %d %s",ac,firstname,lastname,number,gender,&age,DOB);
 		sprintf(fullname,"%s %s",firstname,lastname);
-		printf("%s\t%s\t\t%s\t%s\t%d\t%s\n",ac,fullname,number,gender,age,DOB);
+		strlen(number) < 8 ? strcpy(extraSpace,"\t") : strcpy(extraSpace,"");
+		printf("%s\t%s\t\t%s\t%s%s\t%d\t%s\n",ac,fullname,number,extraSpace,gender,age,DOB);
 		
 	}
 	fclose(fp);
@@ -745,5 +738,41 @@ char * askPassword(){
 	scanf("%s",password);
 	#endif
 	return password;
+}
 
+void toHtml(char title[],char cols[][50],int noOfCols){
+	int counter = countLinesInFile("details/customerdetails.txt");
+	FILE *fp;
+	FILE *html;
+
+	fp = fopen("details/customerdetails.txt","r"); // file to read and write can be passed as argument
+	html = fopen("index.html","w");
+
+	char row[noOfCols][20]; // will contain all values of row
+
+	// writing html
+	fprintf(html, "<!DOCTYPE html>\n<html>\n\t<head>\n\t\t");
+	fprintf(html,"<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x' crossorigin='anonymous'>");
+	fprintf(html, "\n\t\t<title>%s</title>\n\t\t<style>\n\t\t\ttable{overflow:hidden;}tr{transition:0.3s;}tbody tr:hover{transform:scale(1.03);box-shadow: 4px 3px 8px 1px #969696;}</style></head>\n<body>\n",title);
+	fprintf(html,"<div class='container'><h2 class='text-center'>%s</h2>",title);
+	fprintf(html,"<table class='table table-striped text-center'>\n\t<thead>\n\t\t<tr id='thead'>");
+	for (int i=0;i<noOfCols;i++){
+		fprintf(html, "\n\t\t\t<th>%s</th>",cols[i]);// for table heading with custom col name
+	}
+	fprintf(html, "\n\t\t</tr>\n\t</thead>\n\t<tbody id='tbody'>\n\t");
+	char name[50];
+	for (int i=1; i<=counter;i++){
+		fscanf(fp,"%s %s %s %s %s %s %s",row[0],row[1],row[2],row[3],row[4],row[5],row[6]);
+		sprintf(name,"%s %s",row[1],row[2]);
+		fprintf(html, "<tr>\n\t\t<td>%d</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t<td>%s</td><td>%s</td>\n\t\n\t</tr>\n\t",i,row[0],name,row[3],row[4],row[5],row[6]);
+
+	}
+	fprintf(html, "\n\t</tbody>\n</table>");
+	fprintf(html,"<button onclick='getJson()' class='btn btn-primary'> get json</button>\n");
+	fprintf(html,"<script src='https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js' integrity='sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>");
+
+	fprintf(html,"<script  src='script.js'></script>\n</body>\n</html>");
+	fclose(fp);
+	fclose(html);
+	colorize("Successfully exported to index.html\n","green");
 }
