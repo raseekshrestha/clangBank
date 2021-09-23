@@ -1,2 +1,2 @@
-9861 newpass sari 0 1010
-9988 newpass hari 0 1111
+9861 newpass sari 1 1010
+9988 puckered hari 0 4455
