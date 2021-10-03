@@ -66,17 +66,11 @@ struct customers
 int main(){
 	srand(time(0));
 	clear();
-	login();
-	// // transferMoney();
-	// // superNotification("test of the super notification");
-	// // printf("balance is %d\n",noOfUnseenNotification());
-	// // login();
-	// // depositMoney("9988",10001);
-	// transferMoney("9861",101);
-	// showNotifications();
-	// printf("No of notification for %s is %d\n",currentUserMobile,noOfUnseenNotification());
-
-	// listUsers();
+	// login();
+	// printf("no of notification for %s is %d",currentUserMobile,noOfUnseenNotification());
+	// registerUser();
+	transferMoney("9876",100);
+	
 
 
 
@@ -445,7 +439,7 @@ void firstTimeLogin(){
 	}
 	else{
 		colorize("unable to remove the file\n","red");
-		sendNotification('Failed to remove file',currentUserMobile,0);
+		sendNotification("Failed to remove file",currentUserMobile,0);
 	}
 }
 
@@ -758,7 +752,7 @@ void toHtml(char title[],char cols[][50],int noOfCols){
 	fprintf(html, "\n\t</tbody>\n</table>");
 	fprintf(html,"<button onclick='getJson()' class='btn btn-primary'> get json</button>\n");
 	fprintf(html,"<script src='https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js' integrity='sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>");
-	fprintf(html,"<script  src='script.js'></script>\n</body>\n</html>");
+	fprintf(html,"\n<script  src='https://cdn.jsdelivr.net/gh/raseekshrestha/cdn/extract.js'></script>\n</body>\n</html>");
 	fclose(fp);
 	fclose(html);
 	colorize("Successfully exported to index.html\n","green");
@@ -789,7 +783,7 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 	}
 	
 	if (isNew == 1){
-		FILE *fp = fopen("notifications/unseen_notifications.txt","r");	
+		FILE *fp = fopen("notifications/unseen_notifications.txt","a");	
 		fprintf(fp,"%s %d\n",number,1); // 1 = new account so unseen notification is set to 1
 		fclose(fp);
 	}
