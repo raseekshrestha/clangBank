@@ -41,7 +41,7 @@ void showNotifications();
 void superNotification(char msg[]);
 int changePasswordOrPin(char choice[]);
 char * askPassword();
-void toHtml(char title[],char cols[][50],int noOfCols);
+void toHtml();
 int noOfUnseenNotification();
 void setUnseenNotification(char number[20],int isNew); // isNew= 1 if account is new,0 if not new account,-1 if you want to set unseen notification counter to 0
 
@@ -75,7 +75,7 @@ int main(){
 	// printf("msg: ");
 	// gets(msg);
 	// superNotification("testing the new feature");
-	
+	depositMoney("1111",20);
 	login();
 	
 
@@ -172,7 +172,8 @@ void userDashboard(){
 	printf("2. Transfer\n");
 	printf("3. Notification (%d new)\n",noOfUnseenNotification());
 	printf("4. Security\n");
-	int choice = askForNumber(1,4);
+	printf("5. Exit\n");
+	int choice = askForNumber(1,5);
 	if (choice == 1){
 		clear();
 		printf("Your balance is Rs. %.2f",checkBalance(currentUserMobile));
@@ -191,7 +192,7 @@ void userDashboard(){
 		clear();
 		showNotifications();
 	}
-	else{
+	else if (choice ==4){
 		clear();
 		printf("1. Change Password\n");
 		printf("2. Change Pin\n");
@@ -202,9 +203,13 @@ void userDashboard(){
 		else{
 			changePasswordOrPin("pin");
 		}
+	}else{
+		exit(0);
 	}
 	printf("\nPress Enter to continue...");
 	getch();
+	// char cha;
+	// getc(cha);// for linux
 	clear();
 	userDashboard();
 
@@ -216,13 +221,21 @@ void adminDashboard(){
 	printf("2. List User\n");
 	printf("3. Deposit\n");
 	printf("4. Super Notification\n");
-	int choice = askForNumber(1,4);
+	printf("5. Exit\n");
+	int choice = askForNumber(1,5);
 	clear();
 	if (choice==1){
 		registerUser();
 	}
 	else if (choice ==2 ){
 		listUsers();
+		char ch;
+		colorize("Export to html and json? (y/n)","white");
+		cleanStdin();
+		scanf("%c",&ch);
+		if (ch=='y'){
+			toHtml();
+		}
 	}
 	else if (choice ==3){
 		char number[20];
@@ -230,19 +243,29 @@ void adminDashboard(){
 		printf("Mobile Number: ");
 		scanf("%s",number);
 		printf("Amount: ");
-		scanf("%f",amount);
-
+		scanf("%f",&amount);
+		// printf("%s %s",number,amount);
 		if (depositMoney(number,amount)==1){
-			colorize("%.2f has been deposited to your account\n","green");
+			colorize("Given Money has been deposited to your account\n","green");
+		}
+		else{
+			printf("something wrong");
 		}
 	}
-	else{
+	else if (choice==4){
 		char msg[300];
 		printf("Message: ");
 		cleanStdin();
 		gets(msg);
 		superNotification(msg);
 	}
+	else{
+		exit(0);
+	}
+	printf("Press Enter to Continue...");
+	getch();
+	clear();
+	adminDashboard();
 }
 
 
@@ -363,7 +386,7 @@ void registerUser()
 float checkBalance(char number[]){
  	FILE *fp;
  	fp = fopen("balance/allbalances.txt","r");
- 	char line[30];
+ 	char line[60];
  	char acFromFile[15];
  	float userBalance;
 	char userNumber[15];
@@ -618,7 +641,6 @@ int transferMoney(char toMobile[],float amount){
 
 
 int sendNotification(char msg[],char number[],int isNew){
-	printf("inside sendNotification msg = %s\n",msg);
 	char filename[40];
 	sprintf(filename,"%s.txt",number);
 	char path[20] = "notifications",eachLine[200],originalFile[100],eachLine1[200];
@@ -635,11 +657,9 @@ int sendNotification(char msg[],char number[],int isNew){
 		char ch;
 	    // if file exists write the notification to first line and copy rest from the originalFile and perform removeAndRename
 		// printf("Original FIle: %s\n",originalFile);
-		printf("\nwrititng the fucking message %s\n",msg);
 		FILE *notify = fopen(originalFile,"r");
 		FILE *tempFile = fopen("notifications/temp.txt","w");
 		fprintf(tempFile,"%s | %s\n",msg,__DATE__);
-		printf("%s | %s\n",msg,__DATE__);
 		int linesInOriginalFile = countLinesInFile(originalFile);
 		for (int i=1;i<=linesInOriginalFile;i++){
 			while (!feof(notify)){
@@ -658,6 +678,7 @@ int sendNotification(char msg[],char number[],int isNew){
 }
  
 int removeAndRename(char tempFile[],char originalFile[]){
+	// printf("\n i will remove %s\nand rename %s to %s",originalFile,tempFile,originalFile);
 	if (remove(originalFile) == 0 && rename(tempFile,originalFile) ==0){
 		return 1;
 	}
@@ -777,7 +798,6 @@ int changePasswordOrPin(char choice[]){
 		sprintf(msg,"\n%s changed Successfully\n",choice);
 		colorize(msg,"green");
 		sprintf(msg,"%s Changed Successfully, if you didn't request a new %s contact nearest branch immediately",choice,choice);
-		printf("message to send is \n %s",msg);
 		sendNotification(msg,currentUserMobile,0);
 	}
 	else{
@@ -808,7 +828,9 @@ char * askPassword(){
 	return password;
 }
  
-void toHtml(char title[],char cols[][50],int noOfCols){
+void toHtml(){
+	int noOfCols=7;
+	char cols[7][50] = {"id","A/C no","name","mobile number","gender","age","DOB"};
 	int counter = countLinesInFile("details/customerdetails.txt");
 	FILE *fp;
 	FILE *html;
@@ -818,8 +840,8 @@ void toHtml(char title[],char cols[][50],int noOfCols){
 	// writing html
 	fprintf(html, "<!DOCTYPE html>\n<html>\n\t<head>\n\t\t");
 	fprintf(html,"<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x' crossorigin='anonymous'>");
-	fprintf(html, "\n\t\t<title>%s</title>\n\t\t<style>\n\t\t\ttable{overflow:hidden;}tr{transition:0.3s;}tbody tr:hover{transform:scale(1.03);box-shadow: 4px 3px 8px 1px #969696;}</style></head>\n<body>\n",title);
-	fprintf(html,"<div class='container'><h2 class='text-center'>%s</h2>",title);
+	fprintf(html, "\n\t\t<title>User Details</title>\n\t\t<style>\n\t\t\ttable{overflow:hidden;}tr{transition:0.3s;}tbody tr:hover{transform:scale(1.03);box-shadow: 4px 3px 8px 1px #969696;}</style></head>\n<body>\n");
+	fprintf(html,"<div class='container'><h2 class='text-center'>User Details</h2>");
 	fprintf(html,"<table class='table table-striped text-center'>\n\t<thead>\n\t\t<tr id='thead'>");
 	for (int i=0;i<noOfCols;i++){
 		fprintf(html, "\n\t\t\t<th>%s</th>",cols[i]);// for table heading with custom col name
