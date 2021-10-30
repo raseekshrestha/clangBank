@@ -42,8 +42,8 @@ void superNotification(char msg[]);
 int changePasswordOrPin(char choice[]);
 char * askPassword();
 void toHtml();
-// int noOfUnseenNotification();
-// void setUnseenNotification(char number[20],int isNew); // isNew= 1 if account is new,0 if not new account,-1 if you want to set unseen notification counter to 0
+int noOfUnseenNotification();
+void setUnseenNotification(char number[20],int isNew); // isNew= 1 if account is new,0 if not new account,-1 if you want to set unseen notification counter to 0
 
 // global variables
 char currentUser[20],currentUserMobile[15],currentUserAc[15];
@@ -75,7 +75,7 @@ int main(){
 	// printf("msg: ");
 	// gets(msg);
 	// superNotification("testing the new feature");
-	depositMoney("1111",20);
+	// depositMoney("1111",20);
 	login();
 	
 
@@ -170,8 +170,8 @@ void userDashboard(){
 	clear();
 	printf("1. Balance Query\n");
 	printf("2. Transfer\n");
-	// printf("3. Notification (%d new)\n",noOfUnseenNotification());
-	printf("3. Notifications\n");
+	printf("3. Notification (%d new)\n",noOfUnseenNotification());
+	// printf("3. Notifications\n");
 	printf("4. Security\n");
 	printf("5. Exit\n");
 	int choice = askForNumber(1,5);
@@ -380,8 +380,7 @@ void registerUser()
  	printf("Username \t: %s\n",customer.number);
  	printf("Password \t: %s\n",tempPass);
  	printf("\nChange password and set transation pin on first login\n");
-	sendNotification("Account Registration Complete",customer.number,1);
-	// setUnseenNotification(customer.number,1); // 1 new notification for new account
+	sendNotification("Account Registration Complete",customer.number,1); // 1 new notification for new account so isNew=1
  }
 
 float checkBalance(char number[]){
@@ -623,10 +622,8 @@ int transferMoney(char toMobile[],float amount){
 				
 				//sending notification to both sender and receiver
 				sendNotification(message,currentUserMobile,0); //sender
-				printf("sent notification to sender");
 				sprintf(message,"Received Rs.%.2f from %s",amount,currentUserMobile);
 				sendNotification(message,toMobile,0); //receiver
-				printf("semt notification to receiver");
 				return 1;
 			}
 		}
@@ -672,7 +669,7 @@ int sendNotification(char msg[],char number[],int isNew){
 		}
 		fclose(notify);
 		fclose(tempFile);
-
+		printf("removing tempfile and renameing temp file to original one\n");
 		removeAndRename("notifications/temp.txt",originalFile);
 	}
 	// setUnseenNotification(number,isNew);
@@ -681,6 +678,7 @@ int sendNotification(char msg[],char number[],int isNew){
 int removeAndRename(char tempFile[],char originalFile[]){
 	// printf("\n i will remove %s\nand rename %s to %s",originalFile,tempFile,originalFile);
 	if (remove(originalFile) == 0 && rename(tempFile,originalFile) ==0){
+		printf("removed %s and renamed %s to %s",originalFile,tempFile,originalFile);
 		return 1;
 	}
 	else{
@@ -863,63 +861,62 @@ void toHtml(){
 	colorize("Successfully exported to index.html\n","green");
 }
 
-// int noOfUnseenNotification(){
-// 	FILE *notify = fopen("notifications/unseen_notifications.txt","r");
-// 	int lines = countLinesInFile("notifications/unseen_notifications.txt");
-// 	char number[15];
-// 	int unseenNum;
-// 	for (int i=1;i<=lines;i++){
-// 		fscanf(notify,"%s %d",number,&unseenNum);
-// 		if (strcmp(number,currentUserMobile)==0){
-// 			fclose(notify);
-// 			return unseenNum;
-// 		}
-// 	}
-// 	fclose(notify);
-// 	return 0;
-// }
+int noOfUnseenNotification(){
+	FILE *notify = fopen("notifications/unseen_notifications.txt","r");
+	int lines = countLinesInFile("notifications/unseen_notifications.txt");
+	char number[15];
+	int unseenNum;
+	for (int i=1;i<=lines;i++){
+		fscanf(notify,"%s %d",number,&unseenNum);
+		if (strcmp(number,currentUserMobile)==0){
+			fclose(notify);
+			return unseenNum;
+		}
+	}
+	fclose(notify);
+	return 0;
+}
 
-// void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notification to 0 else +1
-// 	if (!(isNew == -1 || isNew == 0 || isNew == 1)){
-// 		colorize("Invalid Value for 'isNew' Available Values[-1,0,1] \n","red");
-// 		colorize("if New Account set its value to 1\n","red");
-// 		colorize("if old Account, and want to increase unseen notification number set its value to 0","red");
-// 		colorize("if old Account, and want to set unseen notification to 0 set its vlaue to -1","red");
-// 	}
+void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notification to 0 else +1
+	if (!(isNew == -1 || isNew == 0 || isNew == 1)){
+		colorize("Invalid Value for 'isNew' Available Values[-1,0,1] \n","red");
+		colorize("if New Account set its value to 1\n","red");
+		colorize("if old Account, and want to increase unseen notification number set its value to 0","red");
+		colorize("if old Account, and want to set unseen notification to 0 set its vlaue to -1","red");
+	}
 	
-// 	if (isNew == 1){
-// 		printf("New registration %s %d",number,isNew);
-// 		FILE *fp = fopen("notifications/unseen_notifications.txt","a");	
-// 		fprintf(fp,"%s %d\n",number,1); // 1 = new account so unseen notification is set to 1
-// 		fclose(fp);
-// 	}
-// 	else{//increase number of unseen notification by 1 if isNew == 0 (not new account)
-		
-// 		int lines = countLinesInFile("notifications/unseen_notifications.txt");
-// 		FILE *fp = fopen("notifications/unseen_notifications.txt","r");	
-// 		FILE *temp = fopen("notifications/temp.txt","w");
-// 		char mobile[20];
-// 		int unseenNum;
-// 		for (int i=1;i<=lines;i++){
-// 			fscanf(fp,"%s %d\n",mobile,&unseenNum);
-// 			if (strcmp(mobile,number)==0){
-// 				if (isNew==0){
-// 					printf("Increasing notification by one");
-// 					fprintf(temp,"%s %d\n",mobile,unseenNum+1);
-// 				}
-// 				else{ // possible value here will be -1 so setting unseen Notification number to 0
-// 					printf("setting notification to 0");
-// 					fprintf(temp,"%s %d\n",mobile,0);
-// 				}
-// 				break;
+	if (isNew == 1){
+		printf("New registration %s %d",number,isNew);
+		FILE *fp = fopen("notifications/unseen_notifications.txt","a");	
+		fprintf(fp,"%s %d\n",number,1); // 1 = new account so unseen notification is set to 1
+		fclose(fp);
+	}
+	else{//increase number of unseen notification by 1 if isNew == 0 (not new account)
+		int lines = countLinesInFile("notifications/unseen_notifications.txt");
+		FILE *fp = fopen("notifications/unseen_notifications.txt","r");	
+		FILE *temp = fopen("notifications/temp.txt","w");
+		char mobile[20];
+		int unseenNum;
+		for (int i=1;i<=lines;i++){
+			fscanf(fp,"%s %d\n",mobile,&unseenNum);
+			if (strcmp(mobile,number)==0){
+				if (isNew==0){
+					printf("Increasing notification by one");
+					fprintf(temp,"%s %d\n",mobile,unseenNum+1);
+				}
+				else{ // possible value here will be -1 so setting unseen Notification number to 0
+					printf("setting notification to 0");
+					fprintf(temp,"%s %d\n",mobile,0);
+				}
+				// break;
 					
-// 			}
-// 			else{
-// 				fprintf(temp,"%s %d\n",mobile,unseenNum);
-// 			}
-// 		}
-// 		fclose(temp);
-// 		fclose(fp);
-// 		removeAndRename("notifications/temp.txt","notifications/unseen_notifications.txt");
-// 	}	
-// }
+			}
+			else{
+				fprintf(temp,"%s %d\n",mobile,unseenNum);
+			}
+		}
+		fclose(temp);
+		fclose(fp);
+		removeAndRename("notifications/temp.txt","notifications/unseen_notifications.txt");
+	}	
+}
