@@ -672,7 +672,7 @@ int sendNotification(char msg[],char number[],int isNew){
 		printf("removing tempfile and renameing temp file to original one\n");
 		removeAndRename("notifications/temp.txt",originalFile);
 	}
-	// setUnseenNotification(number,isNew);
+	setUnseenNotification(number,isNew);
 }
  
 int removeAndRename(char tempFile[],char originalFile[]){
@@ -701,7 +701,7 @@ void showNotifications(){
 			// }
 		}
 	}
-	// setUnseenNotification(currentUserMobile,-1);
+	setUnseenNotification(currentUserMobile,-1);
 }
 
 
