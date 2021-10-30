@@ -669,7 +669,6 @@ int sendNotification(char msg[],char number[],int isNew){
 		}
 		fclose(notify);
 		fclose(tempFile);
-		printf("removing tempfile and renameing temp file to original one\n");
 		removeAndRename("notifications/temp.txt",originalFile);
 	}
 	setUnseenNotification(number,isNew);
@@ -678,7 +677,6 @@ int sendNotification(char msg[],char number[],int isNew){
 int removeAndRename(char tempFile[],char originalFile[]){
 	// printf("\n i will remove %s\nand rename %s to %s",originalFile,tempFile,originalFile);
 	if (remove(originalFile) == 0 && rename(tempFile,originalFile) ==0){
-		printf("removed %s and renamed %s to %s",originalFile,tempFile,originalFile);
 		return 1;
 	}
 	else{
@@ -901,11 +899,9 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 			fscanf(fp,"%s %d\n",mobile,&unseenNum);
 			if (strcmp(mobile,number)==0){
 				if (isNew==0){
-					printf("Increasing notification by one");
 					fprintf(temp,"%s %d\n",mobile,unseenNum+1);
 				}
 				else{ // possible value here will be -1 so setting unseen Notification number to 0
-					printf("setting notification to 0");
 					fprintf(temp,"%s %d\n",mobile,0);
 				}
 				// break;
