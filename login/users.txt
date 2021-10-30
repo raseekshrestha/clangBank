@@ -1,2 +1,4 @@
-9861 newpass sari 1 1010
-9988 puckered hari 0 4455
+9999 b ram 0 1112
+1111 a fname 0 1111
+8888 newpass ram 0 8080
+9090 newpass fname 0 9090
