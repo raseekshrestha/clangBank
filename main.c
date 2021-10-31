@@ -711,7 +711,6 @@ void superNotification(char msg[]){
 	FILE *fp = fopen(customersFile,"r");
 	for (int i=1;i<=lines;i++){
 		fscanf(fp,"%s %s %s %s %s %d %s",ac,fname,lname,num,gender,&age,dob);
-		printf("messge to send %s : %s\n",num,msg);
 		sendNotification(msg,num,0);
 	}
 }
@@ -796,6 +795,7 @@ int changePasswordOrPin(char choice[]){
 		colorize(msg,"green");
 		sprintf(msg,"%s Changed Successfully, if you didn't request a new %s contact nearest branch immediately",choice,choice);
 		sendNotification(msg,currentUserMobile,0);
+		printf("user num is %s\n",currentUserMobile);
 	}
 	else{
 		colorize("\nError Occured\n","red");
@@ -884,7 +884,6 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 	}
 	
 	if (isNew == 1){
-		printf("New registration %s %d",number,isNew);
 		FILE *fp = fopen("notifications/unseen_notifications.txt","a");	
 		fprintf(fp,"%s %d\n",number,1); // 1 = new account so unseen notification is set to 1
 		fclose(fp);
