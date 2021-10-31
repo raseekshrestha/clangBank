@@ -66,16 +66,6 @@ struct customers
 int main(){
 	srand(time(0));
 	clear();
-	// login();
-	// printf("no of notification for %s is %d",currentUserMobile,noOfUnseenNotification());
-	// registerUser();
-	// transferMoney("9876",100);
-	// char msg[100] = "fhjkds fdhkjkhffj fhjkf";
-	// char msg[100];
-	// printf("msg: ");
-	// gets(msg);
-	// superNotification("testing the new feature");
-	// depositMoney("1111",20);
 	login();
 	
 
@@ -197,20 +187,24 @@ void userDashboard(){
 		clear();
 		printf("1. Change Password\n");
 		printf("2. Change Pin\n");
-		int ch = askForNumber(1,2);
+		printf("3. Back\n");
+		int ch = askForNumber(1,3);
 		if (ch==1){
 			changePasswordOrPin("password");
 		}
-		else{
+		else if (ch==2){
 			changePasswordOrPin("pin");
 		}
+		else{
+			clear();
+			userDashboard();
+		}
+		
 	}else{
 		exit(0);
 	}
 	printf("\nPress Enter to continue...");
 	getch();
-	// char cha;
-	// getc(cha);// for linux
 	clear();
 	userDashboard();
 
@@ -231,7 +225,7 @@ void adminDashboard(){
 	else if (choice ==2 ){
 		listUsers();
 		char ch;
-		colorize("Export to html and json? (y/n)","white");
+		colorize("\nExport to html and json? (y/n): ","white");
 		cleanStdin();
 		scanf("%c",&ch);
 		if (ch=='y'){
@@ -247,17 +241,21 @@ void adminDashboard(){
 		scanf("%f",&amount);
 		// printf("%s %s",number,amount);
 		if (depositMoney(number,amount)==1){
-			colorize("Given Money has been deposited to your account\n","green");
+			colorize("\nGiven Money has been deposited to your account\n","green");
 		}
 		else{
-			printf("something wrong");
+			colorize("\nsomething wrong\n","red");
 		}
 	}
 	else if (choice==4){
 		char msg[300];
-		printf("Message: ");
+		printf("Message or(q to cancel): ");
 		cleanStdin();
 		gets(msg);
+		if (strlen(msg)==1 && msg[0]=='q'){
+			clear();
+			adminDashboard();
+		}
 		superNotification(msg);
 	}
 	else{
@@ -610,6 +608,10 @@ int depositMoney(char mobileNumber[],float amount){
 }
 
 int transferMoney(char toMobile[],float amount){
+	if (strcmp(toMobile,currentUserMobile)==0){
+		colorize("You don't need to send money to yourself. Try other number.","red");
+		return 0;
+	}
 	if (mobileNumberExists(toMobile)){
 		float balance = checkBalance(currentUserMobile);
 		char message[100],filename[30];
