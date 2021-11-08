@@ -22,8 +22,8 @@ int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
 float checkBalance(char ac[]);
 int checkOs();
-void colorize(char msg[],char colorName[]);
-char *colorizeReturn(char msg[],char colorName[]);
+void colorize(char msg[],char colorName[]); // prints msg with given color
+char *colorizeReturn(char msg[],char colorName[]); // doesn't print,but returns message with color
 char *color(char colorName[]);
 void cleanStdin();
 int generateCharacter(int min,int max);
@@ -33,7 +33,7 @@ void firstTimeLogin();
 int countLinesInFile(char filename[]);
 int mobileNumberExists(char mobileNumber[]);
 void addBalance(char mobileNumber[],float amount);
-int depositMoney(char mobileNumber[],float amount);
+int depositMoney(char mobileNumber[],float amount); // returns 1/0 on successult / not successful
 int transferMoney(char toMobile[],float amount); //login to user acc before transferring as sender mobile is global variable set in authenticate()
 int sendNotification(char msg[],char number[],int isNew); //isNew is for setting up unseen notification (available values [-1,0,1])
 int removeAndRename(char tempFile[],char originalFile[]);
@@ -42,7 +42,7 @@ void superNotification(char msg[]);
 int changePasswordOrPin(char choice[]);
 char * askPassword();
 void toHtml();
-int noOfUnseenNotification();
+int noOfUnseenNotification(); // returns no of unseen notification for currentUserMobile (current logged in user)
 void setUnseenNotification(char number[20],int isNew); // isNew= 1 if account is new,0 if not new account,-1 if you want to set unseen notification counter to 0
 
 // global variables
@@ -144,8 +144,6 @@ int authenticate(char username[],char password[],char role){
 void userDashboard(){
 
 	printf("welcome to user dashboard, %s\n",colorizeReturn(currentUser,"cyan"));
-	// strcpy(username,strcat(username,"\n"));
-	// colorize(username,"cyan");
 	if (firstLogin==1){
 		printf("Looks like you are a new user\n");
 		printf("Secure you account by changing password and transaction pin\n");
@@ -155,7 +153,6 @@ void userDashboard(){
 	printf("1. Balance Query\n");
 	printf("2. Transfer\n");
 	printf("3. Notification (%d new)\n",noOfUnseenNotification());
-	// printf("3. Notifications\n");
 	printf("4. Security\n");
 	printf("5. Exit\n");
 	int choice = askForNumber(1,5);
@@ -243,7 +240,6 @@ void adminDashboard(){
 		scanf("%s",number);
 		printf("Amount: ");
 		scanf("%f",&amount);
-		// printf("%s %s",number,amount);
 		if (depositMoney(number,amount)==1){
 			sprintf(msg,"Rs. %.2f has been deposited to your account",amount,number);
 			printf("\n%s\n",colorizeReturn(msg,"green"));
@@ -323,7 +319,6 @@ int isFolder(char dirName[]){
     	system(cmd);	
     	return 2;
     }
-
 }
 
 void clear(){
@@ -364,7 +359,7 @@ void registerUser()
     long int ac = accountNumber();    
     fprintf(fp,"%ld %s %s %s %s %d %s\n",ac,customer.firstname,customer.lastname,customer.number,customer.gender,customer.age,customer.DOB);
  	fclose(fp);
- 	// adding to the balance file
+ 	// adding 0 balance to user in balance file
  	FILE *balance;
  	isFolder("balance");
  	balance = fopen("balance/allbalances.txt","a");
@@ -388,24 +383,19 @@ void registerUser()
  }
 
 float checkBalance(char number[]){
- 	FILE *fp;
- 	fp = fopen("balance/allbalances.txt","r");
+	int lines = countLinesInFile("balance/allbalances.txt");
+ 	FILE *fp = fopen("balance/allbalances.txt","r");
  	char line[60];
  	char acFromFile[15];
  	float userBalance;
 	char userNumber[15];
- 	while (!feof(fp)){
- 		// fscanf(fp,"%ld %f",&acFromFile,&userBalance);
- 		if( fgets (line, 60, fp)!=NULL ) {
-	      /* writing content to stdout */
-	      sscanf(line,"%s %s %f",acFromFile,userNumber,&userBalance);
-	      if (strcmp(userNumber,number)==0){
-	      	// printf("%s\t%s\t%f\n",acFromFile,userNumber,userBalance );
-	      	fclose(fp);
+	for (int i=1;i<=lines;i++){
+		fscanf(fp,"%s %s %f",acFromFile,userNumber,&userBalance);
+		if (strcmp(userNumber,number)==0){
+			fclose(fp);
 			return userBalance;
-	      }
-	   }
- 	}
+		}
+	}
  	fclose(fp);
  }
 
@@ -860,6 +850,7 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 		colorize("if New Account set its value to 1\n","red");
 		colorize("if old Account, and want to increase unseen notification number set its value to 0","red");
 		colorize("if old Account, and want to set unseen notification to 0 set its vlaue to -1","red");
+		exit(0);
 	}
 	
 	if (isNew == 1){
