@@ -12,7 +12,7 @@
 
 
 void login();
-int autheticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
+int authenticate(char username[],char password[],char role); // role => 'a' for admin 'u' for user
 void userDashboard();
 void adminDashboard();
 void clear();
@@ -46,10 +46,8 @@ int noOfUnseenNotification();
 void setUnseenNotification(char number[20],int isNew); // isNew= 1 if account is new,0 if not new account,-1 if you want to set unseen notification counter to 0
 
 // global variables
-char currentUser[20],currentUserMobile[15],currentUserAc[15];
-int firstLogin;
-
-
+char currentUser[20],currentUserMobile[15];
+int firstLogin,currentUserPin;
 
 
 struct customers
@@ -67,10 +65,6 @@ int main(){
 	srand(time(0));
 	clear();
 	login();
-	
-
-
-
 	return 0;
 }
 
@@ -94,11 +88,11 @@ void login(){
 	scanf("%s",username);
 	printf("Password : ");
 	strcpy(password,askPassword());
-	autheticate(username,password,role);
+	authenticate(username,password,role);
 
 }
 
-int autheticate(char username[],char password[],char role){
+int authenticate(char username[],char password[],char role){
 	// take username,password and role, validate credentials and redirect to corresponding dashboard//error
 	char filename[20];
 	int usrFound =0,pin;
@@ -125,8 +119,8 @@ int autheticate(char username[],char password[],char role){
 			else{
 				fclose(fp);
 				strcpy(currentUser,fname); // third entry is fname in users.txt
-				strcpy(currentUserMobile,user); // first entry is ac num " "
-				// strcpy(currentUserMobile,)
+				strcpy(currentUserMobile,user); // first entry is mobile num " "
+				currentUserPin = pin;
 				userDashboard();
 				
 			}
@@ -177,6 +171,16 @@ void userDashboard(){
 		scanf("%s",number);		
 		printf("Amount: ");
 		scanf("%f",&amount);
+		while (1){
+			printf("Transaction pin: ");
+			int txPin = askForNumber(1000,9999);
+			if (txPin == currentUserPin){
+				break;
+			}
+			else{
+				colorize("Incorrect Pin\n","red");
+			}
+		}
 		transferMoney(number,amount);
 	}
 	else if (choice == 3){
@@ -233,7 +237,7 @@ void adminDashboard(){
 		}
 	}
 	else if (choice ==3){
-		char number[20];
+		char number[20],msg[200];
 		float amount;
 		printf("Mobile Number: ");
 		scanf("%s",number);
@@ -241,7 +245,9 @@ void adminDashboard(){
 		scanf("%f",&amount);
 		// printf("%s %s",number,amount);
 		if (depositMoney(number,amount)==1){
-			colorize("\nGiven Money has been deposited to your account\n","green");
+			sprintf(msg,"Rs. %.2f has been deposited to your account",amount,number);
+			printf("\n%s\n",colorizeReturn(msg,"green"));
+			sendNotification(msg,number,0);
 		}
 		else{
 			colorize("\nsomething wrong\n","red");
@@ -646,38 +652,13 @@ int sendNotification(char msg[],char number[],int isNew){
 	char path[20] = "notifications",eachLine[200],originalFile[100],eachLine1[200];
 	isFolder(path);
 	sprintf(originalFile,"%s/%s",path,filename);
-	// printf("filename : %s\n",originalFile);
-	if( access( originalFile, F_OK ) != 0 ){
-		// if file do not exists directly write the notification
-    	FILE *notify = fopen(originalFile,"w");
-    	fprintf(notify,"%s | %s\n",msg,__DATE__);
-    	fclose(notify);
-	}
-	else {
-		char ch;
-	    // if file exists write the notification to first line and copy rest from the originalFile and perform removeAndRename
-		// printf("Original FIle: %s\n",originalFile);
-		FILE *notify = fopen(originalFile,"r");
-		FILE *tempFile = fopen("notifications/temp.txt","w");
-		fprintf(tempFile,"%s | %s\n",msg,__DATE__);
-		int linesInOriginalFile = countLinesInFile(originalFile);
-		for (int i=1;i<=linesInOriginalFile;i++){
-			while (!feof(notify)){
-				ch=fgetc(notify);
-				if (!feof(notify)){
-					fputc(ch,tempFile);
-				}
-			}
-		}
-		fclose(notify);
-		fclose(tempFile);
-		removeAndRename("notifications/temp.txt",originalFile);
-	}
+	FILE *notification_file = fopen(originalFile,"a");
+	fprintf(notification_file,"%s | %s\n",msg,__DATE__);
+	fclose(notification_file);
 	setUnseenNotification(number,isNew);
 }
  
 int removeAndRename(char tempFile[],char originalFile[]){
-	// printf("\n i will remove %s\nand rename %s to %s",originalFile,tempFile,originalFile);
 	if (remove(originalFile) == 0 && rename(tempFile,originalFile) ==0){
 		return 1;
 	}
@@ -696,9 +677,6 @@ void showNotifications(){
 		while (!feof(fp)){
 			ch = fgetc(fp);
 			printf("%c",ch);
-			// if (ch=='\n'){
-			// 	break;
-			// }
 		}
 	}
 	setUnseenNotification(currentUserMobile,-1);
@@ -769,8 +747,8 @@ int changePasswordOrPin(char choice[]){
 		else if (strcmp(choice,"pin")==0){
 			printf("\nNew Pin\t: ");
 			newPin = askForNumber(1000,9999);
+			currentUserPin = newPin;
 			break;
-
 		}
 	}
 	rewind(fp);
@@ -797,7 +775,6 @@ int changePasswordOrPin(char choice[]){
 		colorize(msg,"green");
 		sprintf(msg,"%s Changed Successfully, if you didn't request a new %s contact nearest branch immediately",choice,choice);
 		sendNotification(msg,currentUserMobile,0);
-		printf("user num is %s\n",currentUserMobile);
 	}
 	else{
 		colorize("\nError Occured\n","red");
@@ -904,9 +881,7 @@ void setUnseenNotification(char number[20],int isNew){ // if new is 1 set notifi
 				}
 				else{ // possible value here will be -1 so setting unseen Notification number to 0
 					fprintf(temp,"%s %d\n",mobile,0);
-				}
-				// break;
-					
+				}					
 			}
 			else{
 				fprintf(temp,"%s %d\n",mobile,unseenNum);
