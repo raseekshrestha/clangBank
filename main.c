@@ -16,7 +16,7 @@ int authenticate(char username[],char password[],char role); // role => 'a' for 
 void userDashboard();
 void adminDashboard();
 void clear();
-int askForNumber(int min,int max);//allows to choose number betn min and max
+int askForNumber(int min,int max); //allows to choose number betn min and max
 long int accountNumber();
 int isFolder(char dirName[]); //returns 1 or 0 and creates folder if not exists
 void registerUser();
@@ -142,14 +142,18 @@ int authenticate(char username[],char password[],char role){
 }
 
 void userDashboard(){
-
-	printf("welcome to user dashboard, %s\n",colorizeReturn(currentUser,"cyan"));
+	clear();
 	if (firstLogin==1){
+		printf("welcome to user dashboard, %s\n",colorizeReturn(currentUser,"magenta"));
+		printf("====================================\n");
 		printf("Looks like you are a new user\n");
 		printf("Secure you account by changing password and transaction pin\n");
 		firstTimeLogin();
 	}
-	clear();
+	else{
+		printf("welcome to user dashboard, %s\n",colorizeReturn(currentUser,"magenta"));
+		printf("=====================================\n");
+	}
 	printf("1. Balance Query\n");
 	printf("2. Transfer\n");
 	printf("3. Notification (%d new)\n",noOfUnseenNotification());
@@ -186,6 +190,8 @@ void userDashboard(){
 	}
 	else if (choice ==4){
 		clear();
+		colorize("Security Panel\n","magenta");
+		colorize("==============\n","magenta");
 		printf("1. Change Password\n");
 		printf("2. Change Pin\n");
 		printf("3. Back\n");
@@ -211,12 +217,11 @@ void userDashboard(){
 
 }
 void adminDashboard(){
-	
 	printf("welcome to admin dashboard, %s\n",currentUser );
 	printf("1. Register User\n");
 	printf("2. List User\n");
 	printf("3. Deposit\n");
-	printf("4. Super Notification\n");
+	printf("4. Send Notification to all\n");
 	printf("5. Exit\n");
 	int choice = askForNumber(1,5);
 	clear();
@@ -259,6 +264,7 @@ void adminDashboard(){
 			adminDashboard();
 		}
 		superNotification(msg);
+		colorize("Notification sent to all existing users\n","green");
 	}
 	else{
 		exit(0);
@@ -806,7 +812,7 @@ void toHtml(){
 	// writing html
 	fprintf(html, "<!DOCTYPE html>\n<html>\n\t<head>\n\t\t");
 	fprintf(html,"<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x' crossorigin='anonymous'>");
-	fprintf(html, "\n\t\t<title>User Details</title>\n\t\t<style>\n\t\t\ttable{overflow:hidden;}tr{transition:0.3s;}tbody tr:hover{transform:scale(1.03);box-shadow: 4px 3px 8px 1px #969696;}</style></head>\n<body>\n");
+	fprintf(html, "\n\t\t<title>User Details</title>\n\t\t<style>\n\t\t\ttable{overflow:hidden;}tr{transition:0.3s;}tbody tr:hover{transform:scale(1.03);box-shadow: 4px 3px 8px 1px #969696;}\n\t\t</style>\n\t</head>\n<body>\n");
 	fprintf(html,"<div class='container'><h2 class='text-center'>User Details</h2>");
 	fprintf(html,"<table class='table table-striped text-center'>\n\t<thead>\n\t\t<tr id='thead'>");
 	for (int i=0;i<noOfCols;i++){
@@ -817,9 +823,9 @@ void toHtml(){
 	for (int i=1; i<=counter;i++){
 		fscanf(fp,"%s %s %s %s %s %s %s",row[0],row[1],row[2],row[3],row[4],row[5],row[6]);
 		sprintf(name,"%s %s",row[1],row[2]);
-		fprintf(html, "<tr>\n\t\t<td>%d</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t\t<td>%s</td>\n\t<td>%s</td><td>%s</td>\n\t\n\t</tr>\n\t",i,row[0],name,row[3],row[4],row[5],row[6]);
+		fprintf(html, "\t<tr>\n\t\t\t<td>%d</td>\n\t\t\t<td>%s</td>\n\t\t\t<td>%s</td>\n\t\t\t<td>%s</td>\n\t\t\t<td>%s</td>\n\t\t\t<td>%s</td>\n\t\t\t<td>%s</td>\n\t\t</tr>\n\t",i,row[0],name,row[3],row[4],row[5],row[6]);
 	}
-	fprintf(html, "\n\t</tbody>\n</table>");
+	fprintf(html, "\n\t</tbody>\n</table>\n");
 	fprintf(html,"<button onclick='getJson()' class='btn btn-primary'> get json</button>\n");
 	fprintf(html,"<script src='https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js' integrity='sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>");
 	fprintf(html,"\n<script  src='https://cdn.jsdelivr.net/gh/raseekshrestha/cdn/extract.js'></script>\n</body>\n</html>");
